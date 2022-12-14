@@ -1,0 +1,44 @@
+           .                                                            YINDIRIZ
+      *IF X7=OFF                                                        YINDIRIZ
+      *CONTROL NOLIST                                                   YINDIRIZ
+      *IF                                                               YINDIRIZ
+      *                                           ********************* YINDIRIZ
+      *          ***********************************                    YINDIRIZ
+      *          *  REC-INDIRIZ            LL=236  *                    YINDIRIZ
+      *          ***********************************                    YINDIRIZ
+         15 CONTO                        PIC S9(8) COMP.                YINDIRIZ
+         15 D-AGG                         PIC X(24).                    YINDIRIZ
+         15 D-BANCA REDEFINES D-AGG.                                    YINDIRIZ
+          20 D-AGG-BANCA                  PIC X(12).                    YINDIRIZ
+          20 CC-BANCA                     PIC X(12).                    YINDIRIZ
+         15 INDIRIZZO                     PIC X(66)   OCCURS 2.         YINDIRIZ
+         15 TIPO-INDIRIZZO                PIC XX.                       YINDIRIZ
+          88  IND-FATT                    VALUE " F".                   YINDIRIZ
+          88  IND-SPED                    VALUE "S ".                   YINDIRIZ
+          88  IND-SPED-FATT               VALUE "SF".                   YINDIRIZ
+         15 CAP                          PIC S9(8) COMP   OCCURS 2.     YINDIRIZ
+         15 SIGLA-PROV                    PIC XX     OCCURS 2.          YINDIRIZ
+         15 STATO                         PIC XXXX.                     YINDIRIZ
+         15 TELEX                         PIC S9(8) COMP.               YINDIRIZ
+      * per i clienti (da 10000001 a 10000899) assume i valori :        YINDIRIZ
+      *     0          invio anagrafica e dati a PC NEGOZIO             YINDIRIZ
+      *     99999      nessun invio                                     YINDIRIZ
+         15 TELEFONO                       PIC S9(15) COMP-3.           YINDIRIZ
+         15 CONTO-FATTURA                 PIC S9(8) COMP.               YINDIRIZ
+         15 INF-COMM-INDIRIZ               PIC X(40).                   YINDIRIZ
+         15 INF-COMM-ABB  REDEFINES  INF-COMM-INDIRIZ.                  YINDIRIZ
+          20 PRIORITA                     PIC S9(4) COMP.               YINDIRIZ
+      * nell'account RESIDUO se il valore e' 4 significa                YINDIRIZ
+      * ristampa del CARTELLINO PREZZO                                  YINDIRIZ
+          20 PROVINCIA                    PIC S9(4) COMP.               YINDIRIZ
+          20 CAMPO-AGE  OCCURS 3.                                       YINDIRIZ
+           25 CONTO-PROVV                 PIC S9(8) COMP.               YINDIRIZ
+           25 PERC-PROVV                  PIC S9(4) COMP.               YINDIRIZ
+           25 COLLEZIONI.                                               YINDIRIZ
+            30 COLL-VENDITA                PIC S9 COMP-3 OCCURS 6.      YINDIRIZ
+         15 VALIDITA-REC                   PIC XX.                      YINDIRIZ
+          88 ANNULLATO                    VALUE "**".                   YINDIRIZ
+      *                                                                 YINDIRIZ
+      *CONTROL LIST                                                     YINDIRIZ
+      *                                                                 YINDIRIZ
+      *                                                                 YINDIRIZ

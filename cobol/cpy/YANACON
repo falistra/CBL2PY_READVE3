@@ -1,0 +1,67 @@
+           .                                                            YANACON 
+      *IF X7=OFF                                                        YANACON 
+      *CONTROL NOLIST                                                   YANACON 
+      *IF                                                               YANACON 
+      *                                           ********************* YANACON 
+      *          ***********************************                    YANACON 
+      *          *  REC-ANACON             LL=100  *                    YANACON 
+      *          ***********************************                    YANACON 
+         15 CONTO                         PIC S9(8) COMP.               YANACON 
+         15 D-CONTO                       PIC X(24).                    YANACON 
+         15 FLAGS.                                                      YANACON 
+          20 FLAG-ANA-1                   PIC X.                        YANACON 
+           88 CONTO-A-PARTITE             VALUE "1".                    YANACON 
+          20 FLAG-ANA-2                   PIC X.                        YANACON 
+           88 CONTO-A-SCADENZA            VALUE "1".                    YANACON 
+          20 FLAG-ANA-3                   PIC X.                        YANACON 
+           88 RICHIEDE-CDC                VALUE "1".                    YANACON 
+           88 RICHIEDE-FIN                VALUE "2".                    YANACON 
+           88 RICHIEDE-DIP                VALUE "3".                    YANACON 
+          20 FLAG-ANA-4                   PIC X.                        YANACON 
+           88 SPLIT-PAYMENT VALUE "A".                                  YANACON 
+          20 FLAG-ANA-5                   PIC X.                        YANACON 
+           88 FATTURAZ-ELETTRONICA VALUE "A".                           YANACON 
+          20 FLAG-ANA-6                   PIC X.                        YANACON 
+              88 SCONTO-F    VALUE "0" THRU "9".                        YANACON 
+          20 FLAG-ANA-7                   PIC X.                        YANACON 
+           88 MOSTRA-PREZZO-SELLOUT VALUE "S".
+          20 FLAG-ANA-8                   PIC X.                        YANACON 
+           88 SCRIVI-REC-ESTERO VALUE  "3".                             YANACON 
+           88 SCRIVI-REC-RESIDUO VALUE "2".                             YANACON 
+          20 FLAG-ANA-9                   PIC X.                        YANACON 
+           88 FILIALE-DT-ESTERO VALUE  "B".                             YANACON 
+           88 BUDAPEST-KFT      VALUE  "B".                             YANACON 
+           88 SL-BRATISLAVA     VALUE  "S".                             YANACON 
+          20 FLAG-ANA-10                  PIC 9.                        YANACON 
+           88 CLI-CLE                     VALUE 1.                      YANACON 
+           88 FOI-FOE                     VALUE 2.                      YANACON 
+           88 AGI-AGE                     VALUE 3.                      YANACON 
+           88 PORTAF-I-E                  VALUE 4.                      YANACON 
+           88 PORTAF-CO-BANCHE            VALUE 5.                      YANACON 
+           88 BANCHE                      VALUE 6.                      YANACON 
+           88 CRED-DEB-DIV                VALUE 7.                      YANACON 
+           88 ALTRI-CONTI                 VALUE 8.                      YANACON 
+         15 FILLER REDEFINES FLAGS.                                     YANACON 
+          20 FLAG                         PIC X OCCURS 10.              YANACON 
+         15 P-DARE                        PIC S9(15) COMP-3.            YANACON 
+         15 P-AVERE                       PIC S9(15) COMP-3.            YANACON 
+         15 P-DARE-C                      PIC S9(15) COMP-3.            YANACON 
+         15 P-AVERE-C                     PIC S9(15) COMP-3.            YANACON 
+         15 C-RAGG                        PIC S9(8) COMP OCCURS 2.      YANACON 
+         15 FIDO                          PIC S9(4) COMP.               YANACON 
+      *   in RESIDUO contiene il codice del magazzino di DIFFTESS       YANACON 
+      *   corrispondente al CONTO                                       YANACON 
+         15 DATA-FIDO                     PIC S9(8) COMP.               YANACON 
+         15 DATA-NA                       PIC S9(8) COMP.               YANACON 
+         15 DATA-UM                       PIC S9(8) COMP.               YANACON 
+         15 DATA-UV                       PIC S9(8) COMP.               YANACON 
+         15 TIPO-CONTO                    PIC XX.                       YANACON 
+            88 CONT-GENERALE              VALUE "CG".                   YANACON 
+            88 CONT-INDUSTRIALE           VALUE "CI".                   YANACON 
+            88 CONT-FINANZIARIA           VALUE "CF".                   YANACON 
+         15 VALIDITA-REC                  PIC XX.                       YANACON 
+          88 ANNULLATO                    VALUE "**".                   YANACON 
+      *                                                                 YANACON 
+      *CONTROL LIST                                                     YANACON 
+      *                                                                 YANACON 
+      *                                                                 YANACON 

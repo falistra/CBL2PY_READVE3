@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "../../COBOL"
+		},
+		{
+			"name": "READVE3",
+			"path": "."
+		}
+	],
+	"settings": {
+		"cobol-lsp.subroutine-manager.paths-local": [
+			".\\cpy"
+		],
+		"cobol-lsp.cpy-manager.paths-local": [
+			"./cpy"
+		]
+	}
+}

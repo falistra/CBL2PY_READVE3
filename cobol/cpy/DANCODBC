@@ -1,0 +1,30 @@
+      *                                                                 DANCODBC
+           .                                                            DANCODBC
+      *IF X9=OFF                                                        DANCODBC
+      *CONTROL NOLIST                                                   DANCODBC
+      *IF                                                               DANCODBC
+      *                                                                 DANCODBC
+      *         *****************************************               DANCODBC
+      *         *  DESCRIZIONE CODICE ARTICOLO A BARRE  *               DANCODBC
+      *         *****************************************               DANCODBC
+      *                                                                 DANCODBC
+           15 C-MAT-A-BARRE.                                            DANCODBC
+            20 MODELLO               PIC 9(7).                          DANCODBC
+            20 MOD-RID REDEFINES MODELLO.                               DANCODBC
+             25 MARCHIO              PIC 9.                             DANCODBC
+             25 CLASSE               PIC 99.                            DANCODBC
+             25 STAGIONE             PIC 9.                             DANCODBC
+             25 PROGR-ART            PIC 99.                            DANCODBC
+             25 ANNO                 PIC 9.                             DANCODBC
+            20 VESTIBILITA           PIC 9.                             DANCODBC
+            20 SOCIETA               PIC 99.                            DANCODBC
+            20 FILLER REDEFINES SOCIETA.                                DANCODBC
+             25 PREFBC-V-F           PIC 9.                             DANCODBC
+             25 SOC-BC-MOD           PIC 9.                             DANCODBC
+            20 PEZZO                 PIC 9.                             DANCODBC
+            20 VARIANTE-COL          PIC 99.                            DANCODBC
+            20 TAGLIA                PIC 9.                             DANCODBC
+           15 C-MAT-A-BARRE-RID REDEFINES C-MAT-A-BARRE  PIC 9(14).     DANCODBC
+      *                                                                 DANCODBC
+      *CONTROL LIST                                                     DANCODBC
+      *                                                                 DANCODBC
