@@ -1,0 +1,33 @@
+      *                                                                 YSITPF  
+           .                                                            YSITPF  
+      *IF X7=OFF                                                        YSITPF  
+      *CONTROL NOLIST                                                   YSITPF  
+      *IF                                                               YSITPF  
+      *                                            ******************** YSITPF  
+      *            *************************************                YSITPF  
+      *            * REC SITPF         LL: 224         *                YSITPF  
+      *            *************************************                YSITPF  
+            15 C-MAT               PIC S9(15) COMP-3.                   YSITPF  
+            15 MAGAZZINO           PIC S9(4)  COMP.                     YSITPF  
+            15 QTA-GIAC.                                                YSITPF  
+             20  QTA-GIAC-PF        PIC S9(8) COMP COPY NTGOCCURS.      YSITPF  
+            15 VAL-GIAC            PIC S9(11) COMP-3.                   YSITPF  
+            15 QTA-INV.                                                 YSITPF  
+             20 QTA-INV-PF       PIC S9(8) COMP COPY NTGOCCURS.         YSITPF  
+            15 VAL-INV             PIC S9(11) COMP-3.                   YSITPF  
+            15 DT-UM               PIC S9(8)  COMP.                     YSITPF  
+            15 DT-INV              PIC S9(8)  COMP.                     YSITPF  
+            15 QTA-ORDINATA.                                            YSITPF  
+             20 QTA-ORD           PIC S9(8) COMP COPY NTGOCCURS.        YSITPF  
+            15 QTA-ORDINATA-C.                                          YSITPF  
+             20  QTA-ORD-C        PIC S9(8) COMP COPY NTGOCCURS.        YSITPF  
+            15 QTA-IMPEGNATA.                                           YSITPF  
+             20  QTA-IMP          PIC S9(8) COMP COPY NTGOCCURS.        YSITPF  
+            15 QTA-IMPEGNATA-C.                                         YSITPF  
+             20  QTA-IMP-C        PIC S9(8) COMP COPY NTGOCCURS.        YSITPF  
+            15 VAL-REC             PIC XX.                              YSITPF  
+             88 BOX-SOSPESO   VALUE "S ".                               YSITPF  
+      *                                                                 YSITPF  
+      *CONTROL LIST                                                     YSITPF  
+      *                                                                 YSITPF  
+      *                                                                 YSITPF  

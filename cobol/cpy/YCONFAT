@@ -1,0 +1,29 @@
+           .                                                            YCONFAT 
+      *IF X7=OFF                                                        YCONFAT 
+      *CONTROL NOLIST                                                   YCONFAT 
+      *IF                                                               YCONFAT 
+      *                                           ********************* YCONFAT 
+      *          ***********************************                    YCONFAT 
+      *          *  REC-CONFAT             LL=86   *                    YCONFAT 
+      *          ***********************************                    YCONFAT 
+         15 CONTO                         PIC S9(8) COMP.               YCONFAT 
+         15 COND-PAG                       PIC S9(15) COMP-3.           YCONFAT 
+         15 COND-PAGAMENTO REDEFINES COND-PAG.                          YCONFAT 
+          20 CPAG                          PIC S9(5) COMP-3.            YCONFAT 
+          20 SCPAG                         PIC S9(4) COMP-3.            YCONFAT 
+          20 GGPAG                         PIC S99 COMP-3.              YCONFAT 
+         15 SC1                           PIC S9(4) COMP.               YCONFAT 
+         15 SC2                           PIC S9(4) COMP.               YCONFAT 
+         15 COD-FISCALE                    PIC X(16).                   YCONFAT 
+         15 COD-IVA                       PIC S9(9) COMP.               YCONFAT 
+         15 BANCA-APP                      PIC X(36).                   YCONFAT 
+         15 CAUSALE-IVA                   PIC S9(4) COMP.               YCONFAT 
+         15 DIVISA                         PIC X(4).                    YCONFAT 
+         15 MERCATO                       PIC S9(4) COMP.               YCONFAT 
+         15 NR-COPIE-FATT                 PIC S9(4) COMP.               YCONFAT 
+         15 LISTINO                       PIC S9(4) COMP.               YCONFAT 
+         15 VALIDITA-REC                   PIC XX.                      YCONFAT 
+      *                                                                 YCONFAT 
+      *CONTROL LIST                                                     YCONFAT 
+      *                                                                 YCONFAT 
+      *                                                                 YCONFAT 

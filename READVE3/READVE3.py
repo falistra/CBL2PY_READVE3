@@ -1,23 +1,43 @@
 import sys
 if (sys.version_info.major == 2): # Python 2
     input = raw_input
+import re
+
+import ws_rest
+import db_access_core
 
 import RAPPRAI3
+import db
+import logging
+import LoggingConfig # configurazione del logger
+
 
 class Program():
-    def __init__(self):
+    def __init__(self,loglevel='info'):
+        if (loglevel == 'debug'):
+            logging.getLogger().setLevel(logging.DEBUG)
+        elif (loglevel == 'info'):
+            logging.getLogger().setLevel(logging.INFO)
+        elif (loglevel == 'warning'):
+            logging.getLogger().setLevel(logging.WARING)
+        else:
+            logging.getLogger().setLevel(logging.ERROR)
+
         self.DESTINO_VALIDO = [73, 90, 94, 27, 28, 29, 34, 22]
         self.TABELLA_NO_GIAC = []
+
+        self.session = db_access_core.mysql_connect('reretis', echo=False)
         pass
 
     def READVE3(self):
-        self.TRATTA_DEV()
-        self.CARICA_B2C_NO_DT()
-        self.TRATTA_IMPEGNATO()
+        logging.debug("====INIZIO READVE3====")
+        self.TRATTA_DEV() # OK
+        self.CARICA_B2C_NO_DT() # OK
+        self.TRATTA_IMPEGNATO() # OK
         self.TRATTA_NEG()
 
 
-    def TRATTA_DEV(self):	# Linea Source Cobol: 2897
+    def TRATTA_DEV(self): # OK	# Linea Source Cobol: 2897
         while (True):
             print("Disp. USCITA >> ")
             try:
@@ -33,19 +53,15 @@ class Program():
             else:
                 break
 
-    def CARICA_B2C_NO_DT(self):
-        SQL = """
-        SELECT NEGOZIO                                               
-        FROM NEGOZIO_ANAG_CATEGORIA 
-        JOIN NEGOZIO_CATEGORIA USING (ID_CATEGORIA)
-        where DESC_CATEGORIA = 'NEGOZI_ITALIA_B2C_SOC' 
-        order by NEGOZIO
-        """
+    def CARICA_B2C_NO_DT(self): # OK
+        logging.debug("=== select query_NEGOZIO_CATEG ===")
+        self.TAB_B2C_NO_DT = self.session.execute(db.query_NEGOZIO_CATEG)
+        logging.debug(str(self.TAB_B2C_NO_DT))
         # 01 TAB-B2C-NO-DT.
         #   05 EL-B2C-NO-DT  OCCURS 100.
         #     10 MAG-B2C-NO-DT  PIC S9(4) COMP.
 
-    def TRATTA_IMPEGNATO(self):
+    def TRATTA_IMPEGNATO(self): # OK
         while (True):
             print("Si vuole eliminare impegnato ?(SI/NO)")
             try:
@@ -59,48 +75,92 @@ class Program():
                 break
 
     def TRATTA_NEG(self):
-        self.VERIF_NEG()
-        self.VERIF_MAG()
-        self.F_V_INPUT = "V"  # self.VERIF_F_V()
-        self.VERIFICA_SOC()
-        self.CARICA_TAB_UNICO_DDT()
-        self.CICLO_DISIMPEGNO()
-        self.INIZIA_TAB_ART()
-        self.INIZIA_TAB_SING()
-        self.TRATTA_OLD_NEW()
-        self.TRATTA_LETTI()
+        while  (self.VERIF_NEG()): # OK
+            self.VERIF_MAG() # OK
+            self.F_V_INPUT = "V"  # self.VERIF_F_V()
+            self.VERIFICA_SOC() # OK
+            self.CARICA_TAB_UNICO_DDT() # OK
+            if (self.DISIMPEGNA == "SI"):
+                self.CICLO_DISIMPEGNO() # OK
+            self.INIZIA_TAB_ART() # OK
+            self.INIZIA_TAB_SING() # OK
+            self.TRATTA_OLD_NEW()
+            self.TRATTA_LETTI()
 
     def VERIF_NEG(self):
-        print("CONTO cliente (8 cifre)")
-        print("  (END/end=fine)")
-        self.CONTO_IN = input()
-        try:
+        while (True):
+            print("CONTO cliente (8 cifre)")
+            print("  (END/end=fine)")
+            try:
+                self.CONTO_IN = input()
+            except KeyboardInterrupt:
+                    sys.exit(1)
             if (self.CONTO_IN.lower() == 'end'):
-                return 
-            self.CONTO_IN_R = int(self.CONTO_IN)
-            self.NEG = self.CONTO_IN[5:7]
-        except:
-            print("CODICE non numerico")
-            return
-        # lettura REC-ANACON COPY YANACON
-        REC_ANACON = {
-            "CONTO" : "12345678", 
-            "D-CONTO" : "DESCRIZIONE CONTO",
-            "FLAG-ANA-8" : "3", # "3", "2"
-            "FLAG-ANA-9" : "B", # "B", "S"
-        }
-        self.D_CONTO = REC_ANACON["D-CONTO"]
-        self.FLAG_ANACON = REC_ANACON["FLAG-ANA-8"]
-        self.FLAG_DT_ESTERO = True if REC_ANACON["FLAG-ANA-9"] == "B" else False
+                return False 
+            try:
+                self.CONTO_IN_R = int(self.CONTO_IN)
+                self.NEG = self.CONTO_IN[5:7]
+            except:
+                print("CODICE non numerico")
+                continue
+            data = self.session.execute(db.query_SELECT_ANACON,{"CONTO_IN_R":self.CONTO_IN_R})
+           
+            # lettura REC-ANACON COPY YANACON
+            if not data:
+                print("Manca CLIENTE ")
+                continue
+            for rec in data:    # solo 1 rec e in formato dict
+                rec = rec._mapping 
+                break
+            logging.debug(rec)
+            # logging.debug(str(row2dict(rec)))
+          
+            self.REC_ANACON = {
+                "CONTO" : rec['CONTO'], 
+                "D-CONTO" : rec['D_CTO'],
+                "FLAG-ANA-8" : True if rec['FLAG_8'] == 3 else False,
+                "FLAG-ANA-9" : True if rec['FLAG_9'] == "B" else False
+            }
+            # lettura REC-ANACON COPY YANACON
+ 
+            self.D_CONTO = self.REC_ANACON["D-CONTO"]
+            self.FLAG_ANACON = self.REC_ANACON["FLAG-ANA-8"]
+            self.FLAG_DT_ESTERO = self.REC_ANACON["FLAG-ANA-9"]
 
-        self.LEGGI_IND()
-        self.MUOVI_IND()
-        self.MUOVI_CAP()
-        self.SCEGLI_CONTO_FATTURA()
-        self.CERCA_LISTINO()
+            self.CAMPI_ANAGRAFICI = {
+                "D-CONTO-AGG-MEM": None,
+                "INDIRIZZO-STD" : None,
+                "INDIRIZZO-COM": None,                   
+                "LOCALITA-COM": None,                       
+                "CAP-COM": None,             
+                "PROV-COM": None,                        
+                "STATO-COM": None,                       
+                "INDIRIZZO-C-COM": None,                   
+                "LOCALITA-C-COM": None,                   
+                "CAP-C-COM": None,                  
+                "PROV-C-COM": None,
+                "CONTO-FATTURA-MEM" : None                      
+            }
+            rec = self.LEGGI_IND()
+            if rec == False:    return False
+            self.MUOVI_IND(rec)
+            self.MUOVI_CAP(rec)
+            self.SCEGLI_CONTO_FATTURA(rec)
+            self.CERCA_LISTINO()
+            return True
 
 
     def LEGGI_IND(self):
+        data = self.session.execute(db.query_SELECT_INDIRIZ,{"CONTO_IN_R":self.CONTO_IN_R})
+        
+        # lettura REC-ANACON COPY YANACON
+        if not data:
+            print("Manca INDIRIZZO ")
+            return False
+        for rec in data:    # solo 1 rec e in formato dict
+            rec = rec._mapping 
+        logging.debug(rec)
+
         # REC-INDIRIZZI  COPY YINDIRIZ
         self.REC_INDIRIZZI = { # 1607
                 "D-AGG" : " "*24,
@@ -112,20 +172,44 @@ class Program():
                 "TELEFONO" : 0,
                 "TELEX" : 0
         }
+        return rec
 
-    def MUOVI_IND(self):
+    def MUOVI_IND(self,rec):
+        self.CAMPI_ANAGRAFICI["INDIRIZZO-STD"] = rec["INDZ_1"]
+        try:
+            (INDIRIZZO,LOCALITA) = rec["INDZ_1"].split(";")
+            self.CAMPI_ANAGRAFICI["INDIRIZZO-COM"] = INDIRIZZO
+            self.CAMPI_ANAGRAFICI["LOCALITA-COM"] = LOCALITA
+            (INDIRIZZO1,LOCALITA1) = rec["INDZ_2"].split(";")
+            self.CAMPI_ANAGRAFICI["INDIRIZZO-C-COM"] = INDIRIZZO1
+            self.CAMPI_ANAGRAFICI["LOCALITA-C-COM"] = LOCALITA1
+        except:
+            logging.warning(str(self.CONTO_IN_R) + " Errore in MUOVI_IND")
         pass
 
-    def MUOVI_CAP(self):
-        pass
+    def MUOVI_CAP(self,rec):
+        self.CAMPI_ANAGRAFICI["D-CONTO-AGG-MEM"] = rec["D_AGG"]
+        self.CAMPI_ANAGRAFICI["CAP-COM"] = rec["CAP_1"]
+        self.CAMPI_ANAGRAFICI["PROV-COM"] = rec["SGL_P_1"]
+        self.CAMPI_ANAGRAFICI["STATO-COM"] = rec["ST"]
+        self.CAMPI_ANAGRAFICI["CAP-C-COM"] = rec["CAP_2"]
+        self.CAMPI_ANAGRAFICI["PROV-C-COM"] = rec["SGL_P_2"]
 
-    def SCEGLI_CONTO_FATTURA(self):
-        pass
+
+    def SCEGLI_CONTO_FATTURA(self,rec):
+        self.CAMPI_ANAGRAFICI["CONTO-FATTURA-MEM"] = rec["TL"] if not rec["TL"] == 0 else rec["TX"]
 
     def CERCA_LISTINO(self):
-        pass
-
-
+        data = self.session.execute(db.query_SELECT_LISTINO,{"CONTO_IN_R":self.CONTO_IN_R})
+        
+        # lettura REC-ANACON COPY YANACON
+        if not data:
+            print("Manca LISTINO ")
+        for rec in data:    # solo 1 rec e in formato dict
+            rec = rec._mapping 
+            break
+        self.LISTINO_MEM = rec["LIST"]
+        self.DIVISA_MEM = rec["DVS"]
 
 
     def VERIF_MAG(self):
@@ -137,7 +221,9 @@ class Program():
                 sys.exit(1)
             except:                
                 print("MAG non numerico")
-                continue 
+                continue
+            if not self.MAG_INPUT in [1, 4, 6, 7, 852 , 853]:
+                print("accettato MAG 1, 4, 6, 7, 852 o 853")
             else:
                 break                 
 
@@ -147,7 +233,9 @@ class Program():
             try:
                 self.SOCIETA_INPUT = input()
                 if not self.SOCIETA_INPUT == "":
-                    int(self.SOCIETA_INPUT)
+                    self.VERIFICA_SOC_R = int(self.SOCIETA_INPUT)
+                else:
+                    self.VERIFICA_SOC_R = None
             except KeyboardInterrupt:
                 sys.exit(1)
             except:                
@@ -167,39 +255,111 @@ class Program():
         # CALL "QTABELXL" USING PAR-TAB-UNICO-DDT 
         #                       TAB-UNICO-DDT 
         #                       DEP-TAB-UNICO-DDT
+        while(True):
+            while(True):
+                try:
+                    print("AS >> (tt=tutti) (elenco separato da ,) (CHIUDI)")
+                    AS = input()
+                except KeyboardInterrupt:
+                    sys.exit(1)
+                if AS == "CHIUDI":
+                    continue
+                elif AS == 'tt':
+                    AS = [None]
+                else:
+                    z = re.match(AS,r"\s*((\d\d)(\s*,\s*\d\d)*)")
+                    if not z:
+                        print("Non specificato correttamente")
+                        print("deve essere una sequenza di numeri di due cifre separati da una virgola (p.e.: 12,24)") 
+                        continue
+                    else:
+                        break
+            AS = AS.split(",")
+            AS = [_as_.strip() for _as_ in AS]
+                
+            while(True):
+                try:
+                    print("CL >> (elenco separato da ,)")
+                    CL = input()
+                except KeyboardInterrupt:
+                    sys.exit(1)
+                z = re.match(CL,r"\s*((\d\d)(\s*,\s*\d\d)*)")
+                if not z:
+                    print("Non specificato correttamente")
+                    print("deve essere una sequenza di numeri di due cifre separati da una virgola (p.e.: 01,02)") 
+                    continue
+                else:
+                    break
+            CL = CL.split(",")
+            CL = [_cl_.strip() for _cl_ in CL]
 
+            while(True):
+                try:
+                    print("MaxCapi >> (vuoto = tutti)")
+                    MaxCapi = input()                 
+                except KeyboardInterrupt:
+                        sys.exit(1)
+                if MaxCapi == "":
+                    MaxCapi = None
+                else:
+                    try:
+                        MaxCapi = int(MaxCapi)
+                    except:                
+                        print("MaxCapi non numerico")
+                        continue
+                break
 
-        self.TAB_UNICO_DDT = {
-            "AS-CL" : {
-                "MAX_CAPI" : 0,
-                "CAPI_LETTI" : 0
-            }
-        }
+            for _as_ in AS:
+                self.TAB_UNICO_DDT[_as_] = {}
+                for _cl_ in CL:
+                    self.TAB_UNICO_DDT[_as_][_cl_] = {
+                        "maxCapi" : MaxCapi,
+                        "magazzino" : self.MAG_INPUT,
+                        "fornitore" : self.SOCIETA_INPUT
+                        }
+
+            # pretty = json.dumps(self.TAB_UNICO_DDT,indent=4)
+            # print(pretty)
+
+            print("CORRETTI? 'SI' per proseguire 'NO' per rifare elenco AS CL da capo")
+            while(True):
+                try:
+                    risposta = input()
+                except KeyboardInterrupt:
+                    sys.exit(1)
+                except:                
+                    if not risposta.lower() in ["si","no"]:
+                        print("La risposta deve esser 'SI' o 'NO'")
+                    continue 
+                else:
+                    break  
+            if risposta == "SI":
+                break
+            else:
+                continue
 
     def CICLO_DISIMPEGNO(self):
-        for as_cl in self.TAB_UNICO_DDT:
-            DEP_TAB_UNICO_DDT = self.TAB_UNICO_DDT[as_cl]
-            self.MAG_DISIMPEGNA = self.MAG_INPUT
-            self.FORN_DISIMPEGNA = self.SOCIETA_INPUT
-            self.AS_DISIMPEGNA = as_cl[0:2]
-            self.CLASSE_DISIMPEGNA = as_cl[2:4]
-            self.DISIMPEGNA_MAG() 
+        session = db_access_core.mysql_connect('reretis', echo=False)
 
-    def DISIMPEGNA_MAG(self):
-        pass # 1394
-            # CALL "PYTHON" USING "disimpegna_capi"
-            #                     "elimina_impegnati"
-            #                      PY-INPUT-REC-DISIMPEGNA
-            #                      PY-OUTPUT-DISIMPEGNO.        
-            # 01 PY-INPUT-REC-DISIMPEGNA.
-            #  05 LISTA-AS               OCCURS 20.
-            #     10 AS-DISIMPEGNA.
-            #         15 ANNO-DISIMPEGNA        PIC X.
-            #         15 STAG-DISIMPEGNA        PIC X.
-            # 05 MAG-DISIMPEGNA         PIC XXX.
-            # 05 FORN-DISIMPEGNA        PIC X.
-            # 05 LISTA-CLASSE-DISIMPEGNA.
-            #     10 CLASSE-DISIMPEGNA       PIC XX OCCURS 99.
+        for _as_ in self.TAB_UNICO_DDT:
+            for _cl_ in self.TAB_UNICO_DDT[_as_]:
+                json_object = {
+                    'anni_stagioni': [_as_],
+                    'magazzino': self.MAG_INPUT,
+                    'fornitore': self.SOCIETA_INPUT,
+                    'classi': [_cl_]
+                }
+                print(json_object)
+                call_rest_api = ws_rest.Call_Rest_Api_DT(session, logging.getLogger(), 'put', 
+                                            'magazzino_pf/gestione_impegni/DisimpegnaListaModelli', json_object, None)
+
+                response_status = call_rest_api.response_code
+                if response_status == 200 or response_status == 204:
+                    pass
+                else:
+                    print("ERRORE DISIMPEGNO!!!")
+                    sys.exit(1)
+
 
     def INIZIA_TAB_ART(self):
 # 043200 01 TABELLA-ARTICOLI-LETTI.                                               
@@ -224,31 +384,76 @@ class Program():
            "PRIMA_TG" :  1,   # PIC S*9(4) COMP.
            "PREZZO" : 1,
            "TIPO_ANA" : 'XX',
-           "QTA_GIAC" : [],
-           "QTA_TAGLIE" : [],
+           "QTA_GIAC" : [], # 10 
+           "QTA_TAGLIE" : [], # 10
            "COSTO" : 1
         }
-        pass
 
     def INIZIA_TAB_SING(self):
-        pass 
+# 039600  05 C-MAT-SING        PIC S9(15) COMP-3.
+# 039500  05 CONT-SING         PIC S9(4) COMP.  
+# 039700  05 D-MAT-SING        PIC X(7).                                          
+# 039800  05 PREZZO-SING       PIC S9(9) COMP.                                    
+# 039900  05 PRIMA-TG-SING     PIC S9(4) COMP. 
+#       *MOVSKU
+#         05 SKU-SING          PIC X(13).                                      
+        self.ART_TAB_SING = []
+        SING = {
+           "C-MAT" : '123456789012345', # PIC S9(15) COMP-3
+           "CONT" : '1234', 
+           "D-MAT" :  '1234567',   # PIC S*9(4) COMP.
+           "PREZZO" : 1, # S9(9)
+           "PRIMA-TG" : 1, # S9(4)
+           "SKU" : '1234567890123' # 13 
+        }
 
     def TRATTA_OLD_NEW(self):
-        # print(self.D_CONTO_MEM)
+        print(self.D_CONTO_MEM)
         print("dal mag ",self.MAG_INPUT)
         self.TRATTA_SITPF_3()
         print(" S stampa rapportino")
         self.COD_IN = input().lower()
         if (self.COD_IN == 's'):
-            self.STAMPA_RAPPORTINO()
+            rc = self.STAMPA_RAPPORTINO()
             print("   rapportino stampato")       
-        pass
+
+    def TRATTA_SITPF_3(self):
+        engine = db.mysql_engine('reretis', echo=False)
+        conn = engine.connect()
+        data = conn.execute(db.query_SITPF3,{"MAG_INPUT":self.MAG_INPUT})
+        for rec in data:
+            rec = rec._mapping
+
+
+
+
+        self.TRATTA_LEGGI()
 
     def TRATTA_LETTI(self):
         pass
 
-    def TRATTA_SITPF_3(self):
-        pass
+        
+    def TRATTA_LEGGI(self):
+        self.ANACST_MAG_COM = None # self.MAG_INPUT_R # 2015
+        self.ANACST_C_MAT_COM = None # 2016 MOVE C-MAT OF REC-ANAMAT TO ANACST-C-MAT-COM
+
+        self.RIVALUTA_COSTO_ANAMAT()
+    
+    def RIVALUTA_COSTO_ANAMAT(self):
+        self.CERCA_B2C_NO_DT()
+        self.RICERCA_COSTO_ANAMAT()
+
+    def CERCA_B2C_NO_DT(self):
+        if self.ANACST_MAG_COM  in self.TAB_B2C_NO_DT:
+            self.FLAG_B2C_NO_DT = 'S'
+        else:
+            self.FLAG_B2C_NO_DT = 'N'
+
+    def RICERCA_COSTO_ANAMAT(self):
+        ANACST_C_MAT = self.ANACST_C_MAT_COM
+        data = self.session.execute(db.query_SELECT_ANAMAT_CST,{'ANACST_C_MAT':ANACST_C_MAT})
+        #if not data: # IF B2C-NO-DT
+            
 
     def STAMPA_RAPPORTINO(self):
         RAPPRAI3.RAPPRAI3(self.ART_TAB_LETTI,self.TABELLA_NO_GIAC)
@@ -263,5 +468,5 @@ class Program():
         pass
 
 if __name__ == "__main__":
-    program = Program()
+    program = Program(loglevel='debug')
     program.READVE3()   
