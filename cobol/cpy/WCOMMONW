@@ -1,0 +1,418 @@
+055210     .                                                            WCOMMONW
+055220*IF  X9=OFF                                                       WCOMMONW
+055230*CONTROL NOLIST                                                   WCOMMONW
+055240*IF                                                               WCOMMONW
+055250   15   W-SOTTOSISTEMA              PIC 99.                       WCOMMONW
+055260   15   W-DATI-W-IMAGE.                                           WCOMMONW
+055270    20   W-NOME-DATA-BASE-1         PIC X(16).                    WCOMMONW
+055280    20   W-TAB-DB.                                                WCOMMONW
+055290     25   W-NOME-DB                 PIC X(16) OCCURS 8.           WCOMMONW
+055300    20   FILLER REDEFINES W-TAB-DB.                               WCOMMONW
+055310     25   W-NOME-DB-1               PIC X(16).                    WCOMMONW
+055320     25   W-NOME-DB-2               PIC X(16).                    WCOMMONW
+055330     25   W-NOME-DB-3               PIC X(16).                    WCOMMONW
+055340     25   W-NOME-DB-4               PIC X(16).                    WCOMMONW
+055350     25   W-NOME-DB-5               PIC X(16).                    WCOMMONW
+055360     25   W-NOME-DB-6               PIC X(16).                    WCOMMONW
+055370     25   W-NOME-DB-7               PIC X(16).                    WCOMMONW
+055380     25   W-NOME-DB-8               PIC X(16).                    WCOMMONW
+055390    20   W-MODO                     PIC S9(4) COMP.               WCOMMONW
+055400    20   W-NOME-CAMPO               PIC X(16).                    WCOMMONW
+055410    20   W-VALORE-CAMPO             PIC S9(15) COMP-3.            WCOMMONW
+055420    20   W-DB-KEY-P16 REDEFINES W-VALORE-CAMPO                    WCOMMONW
+055430                                    PIC S9(15) COMP-3.            WCOMMONW
+055440    20   W-VAL-1 REDEFINES W-VALORE-CAMPO.                        WCOMMONW
+055450     25   W-VALORE-CAMPO-W          PIC S9(9) COMP.               WCOMMONW
+055460     25   W-DB-KEY-W REDEFINES W-VALORE-CAMPO-W                   WCOMMONW
+055470                                    PIC S9(9) COMP.               WCOMMONW
+055480     25   FILLER                    PIC X(4).                     WCOMMONW
+055490    20   W-VAL-2 REDEFINES W-VALORE-CAMPO.                        WCOMMONW
+055500     25   W-VALORE-CAMPO-HW         PIC S9(4) COMP.               WCOMMONW
+055510     25   W-DB-KEY-HW REDEFINES W-VALORE-CAMPO-HW                 WCOMMONW
+055520                                    PIC S9(4) COMP.               WCOMMONW
+055530     25   FILLER                    PIC X(6).                     WCOMMONW
+055540    20   W-VAL-3 REDEFINES W-VALORE-CAMPO.                        WCOMMONW
+055550     25   W-VALORE-CAMPO-X4         PIC X(4).                     WCOMMONW
+055560     25   W-DB-KEY-X4 REDEFINES W-VALORE-CAMPO-X4                 WCOMMONW
+055570                                    PIC X(4).                     WCOMMONW
+055580     25   FILLER                    PIC X(4).                     WCOMMONW
+055590    20   W-VAL-4 REDEFINES W-VALORE-CAMPO.                        WCOMMONW
+055600     25   W-VALORE-CAMPO-12         PIC S9(11) COMP-3.            WCOMMONW
+055610     25   FILLER                    PIC XX.                       WCOMMONW
+055590    20   W-VAL-5 REDEFINES W-VALORE-CAMPO.                        WCOMMONW
+055600     25   W-VALORE-CAMPO-15         PIC S9(15) COMP.              WCOMMONW
+055620    20   W-NOME-DATA-SET            PIC X(8).                     WCOMMONW
+055630    20   W-PAROLA-CHIAVE-1          PIC X(8).                     WCOMMONW
+055640    20   W-TUTTO-RECORD             PIC XX.                       WCOMMONW
+055650    20   W-CHIUSURA-TOTALE          PIC XX.                       WCOMMONW
+055660*                                                                 WCOMMONW
+055670    20   W-CA-IMAGE.                                              WCOMMONW
+055680     25   W-STATUS-WORD-IMAGE       PIC S9(4) COMP.               WCOMMONW
+055690        88  W-OK-IMAGE              VALUE  0.                     WCOMMONW
+055700        88  W-ERRORI-TRAGICI        VALUE  -9999 THRU -1.         WCOMMONW
+055710        88  W-INIZIO-FILE           VALUE  10.                    WCOMMONW
+055720        88  W-FINE-FILE             VALUE  11.                    WCOMMONW
+055730        88  W-FUORI-FILE            VALUE  12 , 13.               WCOMMONW
+055740        88  W-INIZIO-CATENA         VALUE  14.                    WCOMMONW
+055750        88  W-FINE-CATENA           VALUE  15.                    WCOMMONW
+055760        88  W-DATA-SET-PIENO        VALUE  16.                    WCOMMONW
+055770        88  W-REC-NON-TROVATO       VALUE  17.                    WCOMMONW
+055780        88  W-ACCESSO-PROTETTO      VALUE  20.                    WCOMMONW
+055790        88  W-CHIAVE-DOPPIA         VALUE  43.                    WCOMMONW
+055800        88  W-CATENA-NON-ESAURITA   VALUE  44.                    WCOMMONW
+055810        88  W-CATENA-PIENA          VALUE 200 THRU 299.           WCOMMONW
+055820        88  W-MASTER-PIENO          VALUE 300 THRU 399.           WCOMMONW
+055830     25   W-WORD-L-BUFF             PIC S9(4) COMP.               WCOMMONW
+055840     25   W-WORD-ATT                PIC S9(9) COMP.               WCOMMONW
+055850     25   W-WORD-SIN                PIC S9(9) COMP.               WCOMMONW
+055860          88 W-CATENA-VUOTA         VALUE 0.                      WCOMMONW
+055870     25   W-WORD-PREC               PIC S9(9) COMP.               WCOMMONW
+055880     25   W-WORD-SEG                PIC S9(9) COMP.               WCOMMONW
+055890*                                                                 WCOMMONW
+055900   15   W-DATI-W-DEL.                                             WCOMMONW
+055910    20   W-CA-DEL.                                                WCOMMONW
+055920     25   W-STATUS-WORD-DEL         PIC S9(4) COMP.               WCOMMONW
+055930        88  W-OK-DEL                VALUE  0.                     WCOMMONW
+055940        88  W-ERRORE-DEL            VALUE  -1.                    WCOMMONW
+055950        88  W-ERRORE-FILE           VALUE  0 THRU 999.            WCOMMONW
+055960        88  W-ERRORE-SHOW           VALUE  1000 THRU 9999.        WCOMMONW
+055970        88  W-FINE-MESSAGGIO        VALUE  -2.                    WCOMMONW
+055980        88  W-ERRORE-EDIT           VALUE  -1.                    WCOMMONW
+055990        88  W-ERRORE-EDIT-SPECIALE  VALUE  -3.                    WCOMMONW
+056000        88  W-FLAG-EDIT             VALUE  -3 THRU 0.             WCOMMONW
+056010        88  W-ERRORI-TRAGICI-DEL    VALUE  -2007 THRU -1000.      WCOMMONW
+056020        88  W-ERRORE-DEL-TRASMIS    VALUE -2001.                  WCOMMONW
+056030         25        W-SW.                                          WCOMMONW
+056040    30  W-SW-1                          PIC S9(4) COMP.           WCOMMONW
+056050    30  W-SW-2                      PIC  S9(4) COMP.              WCOMMONW
+056060    30  W-SW-3                      PIC S9(4) COMP.               WCOMMONW
+056070    30  W-SW-4                      PIC S9(4) COMP.               WCOMMONW
+056080    30  W-SW-5                      PIC S9(4) COMP.               WCOMMONW
+056090    30  W-SW-6                      PIC S9(4) COMP.               WCOMMONW
+056100    30  W-SW-7                      PIC S9(4) COMP.               WCOMMONW
+056110    30  W-SW-8                      PIC S9(4) COMP.               WCOMMONW
+056120    30  W-SW-9                      PIC S9(4) COMP.               WCOMMONW
+056130    30  W-SW-10                     PIC S9(4) COMP.               WCOMMONW
+056140     25   FILLER                    PIC X(234).                   WCOMMONW
+056150    20   W-NOME-MODULO              PIC X(16).                    WCOMMONW
+056160    20   W-LL-MODULO                PIC S9(4) COMP.               WCOMMONW
+056170    20   W-NOME-PROX-MODULO         PIC X(16).                    WCOMMONW
+056180    20   W-CAMPO-ERRATO.                                          WCOMMONW
+056190     25   W-RIGA                    PIC  999.                     WCOMMONW
+056200     25   W-COLONNA                 PIC  999.                     WCOMMONW
+056210     25   FILLER                    PIC X(66).                    WCOMMONW
+056220     25   W-SYSMODULI               PIC X(36).                    WCOMMONW
+056230     25   W-PROX-MODULO             PIC X(16).                    WCOMMONW
+056240     25   W-TERMINALE               PIC X(8).                     WCOMMONW
+056250*                                                                 WCOMMONW
+056260   15   W-DATI-VIEW REDEFINES W-DATI-W-DEL.                       WCOMMONW
+056270    20   W-CA-VIEW.                                               WCOMMONW
+056280     25   W-CSTATUS                 PIC S9(4) COMP-5.             WCOMMONW
+056290        88 W-OK-VIEW                VALUE 0.                      WCOMMONW
+056300     25   W-LINGUAGGIO              PIC S9(4) COMP-5.             WCOMMONW
+056310        88  W-COBOL                 VALUE  0.                     WCOMMONW
+056320     25   W-LL-CA-VIEW              PIC S9(4) COMP-5.             WCOMMONW
+056330     25   W-EXT-BASIC               PIC S9(4) COMP-5.             WCOMMONW
+056340     25   W-COLLECT-BROWSE          PIC S9(4) COMP-5.             WCOMMONW
+056350        88  W-COLLECT               VALUE 0.                      WCOMMONW
+056360        88  W-BROWSE                VALUE 1.                      WCOMMONW
+056370     25   W-ULT-TASTO-FUNZ          PIC S9(4) COMP-5.             WCOMMONW
+056380        88  W-F0                    VALUE 0.                      WCOMMONW
+056390        88  W-F1                    VALUE 1.                      WCOMMONW
+056400        88  W-F2                    VALUE 2.                      WCOMMONW
+056410        88  W-F3                    VALUE 3.                      WCOMMONW
+056420        88  W-F4                    VALUE 4.                      WCOMMONW
+056430        88  W-F5                    VALUE 5.                      WCOMMONW
+056440        88  W-F6                    VALUE 6.                      WCOMMONW
+056450        88  W-F7                    VALUE 7.                      WCOMMONW
+056460        88  W-F8                    VALUE 8.                      WCOMMONW
+056470     25   W-NUMERO-ERRORI           PIC S9(4) COMP-5.             WCOMMONW
+056480        88  W-NO-ERR                VALUE 0.                      WCOMMONW
+056490        88  W-ERRORI-FORMALI        VALUE 9999.                   WCOMMONW
+056500     25   W-WIND-EN                 PIC S9(4) COMP-5.             WCOMMONW
+056510     25   FILLER REDEFINES W-WIND-EN.                             WCOMMONW
+056520      30   W-FILLER                 PIC X.                        WCOMMONW
+056530      30   W-WINDOW-ENH             PIC X.                        WCOMMONW
+056540     25   W-MULTIUSAGE              PIC S9(4) COMP-5.             WCOMMONW
+056550     25   W-LABEL-OPTION            PIC S9(4) COMP-5.             WCOMMONW
+056560     25   W-NOME-CFORM              PIC X(15).                    WCOMMONW
+056570     25   W-FILLER                  PIC X.                        WCOMMONW
+056580     25   W-NOME-NFORM              PIC X(15).                    WCOMMONW
+056590     25   W-FILLER                  PIC X.                        WCOMMONW
+056600     25   W-FLAG-REPEAT             PIC S9(4) COMP-5.             WCOMMONW
+056610        88  W-NORMAL                VALUE 0.                      WCOMMONW
+056620        88  W-REPEAT                VALUE 1.                      WCOMMONW
+056630        88  W-V-REPEAT-APP          VALUE 2.                      WCOMMONW
+056640     25   W-FLAG-FREEZE             PIC S9(4) COMP-5.             WCOMMONW
+056650        88  W-CLEAR                 VALUE 0.                      WCOMMONW
+056660        88  W-APP-NEXT              VALUE 1.                      WCOMMONW
+056670        88  W-FREEZE-APP            VALUE 2.                      WCOMMONW
+056680     25   W-NR-RIGHE-CFORM          PIC S9(4) COMP-5.             WCOMMONW
+056690     25   W-LL-BUFFER               PIC S9(4) COMP-5.             WCOMMONW
+056700     25   FILLER                    PIC S9(4) COMP-5.             WCOMMONW
+056710     25   W-LOOK-AHEAD              PIC S9(4) COMP-5.             WCOMMONW
+056720     25   W-DELETE-FLAG             PIC S9(4) COMP-5.             WCOMMONW
+056730     25   W-SHOWCONTROL             PIC S9(4) COMP-5.             WCOMMONW
+056740        88  W-DFORM-BIT15           VALUE 1, 129.                 WCOMMONW
+056750        88  W-DDATI-BIT14           VALUE 2, 130.                 WCOMMONW
+056760        88  W-DWIND-BIT13           VALUE 4, 132.                 WCOMMONW
+056770     25   W-FILLER                  PIC S9(4) COMP-5.             WCOMMONW
+056780     25   W-PRINTFILE-NUM           PIC S9(4) COMP-5.             WCOMMONW
+056790     25   W-FILERRNUM               PIC S9(4) COMP-5.             WCOMMONW
+056800     25   W-ERRFILNUM               PIC S9(4) COMP-5.             WCOMMONW
+056810     25   W-FORM-STORE-SIZE         PIC S9(4) COMP-5.             WCOMMONW
+056820     25   FILLER                    PIC S9(4) COMP-5.             WCOMMONW
+           25   FILLER                    PIC S9(4) COMP-5.             WCOMMONW
+           25   FILLER                    PIC S9(4) COMP-5.             WCOMMONW     
+056830     25   W-NUM-RECS                PIC S9(9) COMP-5.             WCOMMONW
+056840     25   W-RECNUM                  PIC S9(9) COMP-5.             WCOMMONW
+056850     25   FILLER                    PIC S9(4) COMP-5.             WCOMMONW
+           25   FILLER                    PIC S9(4) COMP-5.             WCOMMONW
+056860     25   W-TERMFILENUM             PIC S9(4) COMP-5.             WCOMMONW
+056870     25   FILLER                    PIC S9(4) COMP-5.             WCOMMONW
+           25   FILLER                    PIC S9(4) COMP-5.             WCOMMONW
+           25   FILLER                    PIC S9(4) COMP-5.             WCOMMONW
+           25   FILLER                    PIC S9(4) COMP-5.             WCOMMONW
+           25   FILLER                    PIC S9(4) COMP-5.             WCOMMONW     
+056880     25   W-RETRIES                 PIC S9(4) COMP-5.             WCOMMONW
+056890     25   W-OPTIONS                 PIC S9(4) COMP-5.             WCOMMONW
+056900     25   W-ENVIRON                 PIC S9(4) COMP-5.             WCOMMONW
+056910     25   W-USER-TIME               PIC S9(4) COMP-5.             WCOMMONW
+056920     25   W-TERM-IDENTIFIER         PIC S9(4) COMP-5.             WCOMMONW
+056930          88 W-TERM-2624            VALUE 9, 13.                  WCOMMONW
+056940     25   W-LAB-INFO                PIC S9(4) COMP-5.             WCOMMONW
+056950*                                                                 WCOMMONW
+056960    20   W-NOME-FORMSFILE           PIC X(20).                    WCOMMONW
+056970    20   W-NOME-TERMINALE           PIC X(10).                    WCOMMONW
+056980    20   W-NOME-FORM-TEST           PIC X(14).                    WCOMMONW
+056990    20   W-NOME-FORM-DETT           PIC X(14).                    WCOMMONW
+057000    20   W-LL-FIELD                 PIC S9(4) COMP-5.             WCOMMONW
+057010    20   W-FLAGS-STD.                                             WCOMMONW
+057020     25   W-FLAG-ERRORI-STD         PIC S9(4) COMP.               WCOMMONW
+057030        88 W-NO-ERRORI              VALUE 0.                      WCOMMONW
+057040        88 W-ERR-TESTATA            VALUE 1.                      WCOMMONW
+057050        88 W-ERR-DETTAGLIO          VALUE 2.                      WCOMMONW
+057060     25  W-FLAG-COMANDO             PIC S9(4) COMP-5.             WCOMMONW
+057070        88 W-NO-COMANDO             VALUE 0.                      WCOMMONW
+057080        88 W-COMANDO-OK             VALUE 1.                      WCOMMONW
+057090        88 W-COMANDO-NO-OK          VALUE -1.                     WCOMMONW
+057100     25  W-FLAG-RICERCA             PIC S9(4) COMP-5.             WCOMMONW
+057110    20   W-NR-FIELD                 PIC S9(4) COMP-5.             WCOMMONW
+057120    20   W-LL-FIELD-MOSSO           PIC S9(4) COMP-5.             WCOMMONW
+057130    20   W-NR-PROX-FIELD            PIC S9(4) COMP-5.             WCOMMONW
+057140    20   W-PRINT-C                  PIC S9(4) COMP-5.             WCOMMONW
+057150    20   W-PAGE-C                   PIC S9(4) COMP-5.             WCOMMONW
+057160*                                                                 WCOMMONW
+057170    20   W-DATI-WINDOW.                                           WCOMMONW
+057180     25   W-LL-MAX-WINDOW           PIC S9(4) COMP-5.             WCOMMONW
+057190     25   W-LL-WINDOW               PIC S9(4) COMP-5.             WCOMMONW
+057200     25   W-MESS-X-WINDOW.                                        WCOMMONW
+057210      30   W-FIL-WINDOW             PIC X(54).                    WCOMMONW
+057220      30   W-RESTO-WINDOW           PIC X(24).                    WCOMMONW
+057230*                                                                 WCOMMONW
+057240    20   W-CAMPO-ERR.                                             WCOMMONW
+057250     25   W-FIL-ERR                 PIC X.                        WCOMMONW
+057260     25   W-NUM-ERR                 PIC Z(15)9.                   WCOMMONW
+057270     25   W-NUM-ERR-X REDEFINES W-NUM-ERR PIC X(16).              WCOMMONW
+057280     25   W-FILLER                  PIC X.                        WCOMMONW
+057290    20   W-LL-CAMPO-ERR             PIC S9(4) COMP.               WCOMMONW
+057300    20   W-LL-CAMPO-ERR-2           PIC S9(4) COMP.               WCOMMONW
+057310*                                                                 WCOMMONW
+057320    20   W-CAMPI-FLAG-STD.                                        WCOMMONW
+057330     25   W-FLAG-FINISH-TEST        PIC S9(4) COMP.               WCOMMONW
+057340     25   W-FLAG-FINISH-DETT        PIC S9(4) COMP.               WCOMMONW
+057350          88 W-FINISH-DETT          VALUE 1, 3.                   WCOMMONW
+057360          88 W-DETT-CIECO           VALUE 2, 3.                   WCOMMONW
+057370     25   W-NUMERO-FORMS            PIC S9(4) COMP.               WCOMMONW
+057380     25   W-FLAG-LOOP-TEST          PIC S9(4) COMP.               WCOMMONW
+057390     25   W-FLAG-TIPO-AGG           PIC S9(4) COMP.               WCOMMONW
+057400        88  W-AGG-FINALE            VALUE 1.                      WCOMMONW
+057410        88  W-AGG-PER-PAG           VALUE 2.                      WCOMMONW
+057420*                                                                 WCOMMONW
+057430    20   W-FLAG-CHIUDI-TEST             PIC S9(4)  COMP.          WCOMMONW
+057440     88   W-FINE-TESTATA              VALUE 1.                    WCOMMONW
+057450   20   W-FLAG-CHIUDI-DETT          PIC  S9(4)  COMP.             WCOMMONW
+057460     88   W-FINE-DETTAGLIO          VALUE 1.                      WCOMMONW
+057470   20  W-LL-DISPLAY               PIC S9(4) COMP.                 WCOMMONW
+057480   20  W-CTL-DISPLAY              PIC S9(4) COMP.                 WCOMMONW
+057490     20   W-CAMPO-SIGLA.                                          WCOMMONW
+057500      30   W-PAR-TESTP.                                           WCOMMONW
+057510      35   W-LL-MAX-SIGLA           PIC S9(4) COMP.               WCOMMONW
+057520      35   W-LL-SIGLA               PIC S9(4) COMP.               WCOMMONW
+057530      30   W-SIGLA-OUT.                                           WCOMMONW
+057540       35   W-POS-RC                PIC X(9).                     WCOMMONW
+057550       35   FILLER                  PIC XX.                       WCOMMONW
+057560       35   W-SIGLA-AZ              PIC X(8).                     WCOMMONW
+057570       35   FILLER                  PIC XX.                       WCOMMONW
+057580      30  FILLER REDEFINES W-SIGLA-OUT.                           WCOMMONW
+057590*      35  FILLER                   PIC X(20).                    WCOMMONW
+057600    35   W-CAMPO-COMANDO.                                         WCOMMONW
+057610     45   W-CAMPO-PUNTO             PIC X.                        WCOMMONW
+057620     45   W-FILLER                  PIC X.                        WCOMMONW
+057630          88 W-PAGINAZ              VALUE "P".                    WCOMMONW
+057640     45   W-FIL-COM-SPACE.                                        WCOMMONW
+057650      47  W-COMAND-SPACE-1          PIC X.                        WCOMMONW
+057660          88 W-P-1-9                VALUE "1" THRU "9".           WCOMMONW
+057670      47  W-COMAND-SPACE-2          PIC X.                        WCOMMONW
+057680          88 W-P-10-99              VALUE "0" THRU "9".           WCOMMONW
+057690     20   FILLER                    PIC X.                        WCOMMONW
+057700     20   W-PAR-SOPTV.                                            WCOMMONW
+057710      25   W-FUNZ-SOPTV             PIC S9(4) COMP.               WCOMMONW
+057720      25   W-STATO-SOPTV            PIC S9(4) COMP.               WCOMMONW
+057730      25   W-TIPO-SOPTV             PIC S9(4) COMP.               WCOMMONW
+057740      25   FILLER                   PIC X.                        WCOMMONW
+057750      25   W-RIGA-V                 PIC 99.                       WCOMMONW
+057760      25   FILLER                   PIC X.                        WCOMMONW
+057770      25   W-COLONNA-V              PIC 99.                       WCOMMONW
+057780*                                                                 WCOMMONW
+057790   15   W-MESSAGGI-COMANDO.                                       WCOMMONW
+057800    20   W-ULT-MESS-COMANDO         PIC X(4).                     WCOMMONW
+057810        88  W-CHIUDI-SOTTOSISTEMA   VALUE  ".CS ".                WCOMMONW
+057820        88  W-CHIUDI-FUNZIONE       VALUE  ".CF ".                WCOMMONW
+057830        88  W-CHIUDI-OPERAZIONE     VALUE  ".CO ".                WCOMMONW
+057840        88  W-ANNULLA-1               VALUE  ".A  ".              WCOMMONW
+057850        88  W-PROSEGUI-1            VALUE  ".P  ".                WCOMMONW
+057860        88  W-VARIA                 VALUE  ".V  ".                WCOMMONW
+057870        88  W-PAG-PRECEDENTE        VALUE  ".PP ".                WCOMMONW
+057880        88  W-PAG-SEGUENTE          VALUE  ".PS ".                WCOMMONW
+057890         88 W-INSERISCI             VALUE  ".I  ".                WCOMMONW
+057900         88 W-ANNULLA-RIGA          VALUE  ".AR ".                WCOMMONW
+057910         88 W-STAMPA                VALUE ".S  ".                 WCOMMONW
+057920    20 FILLER REDEFINES W-ULT-MESS-COMANDO.                       WCOMMONW
+057930     25 W-ULT-MESS-1                PIC XX.                       WCOMMONW
+057940      88 W-CHIUDI                   VALUE ".C".                   WCOMMONW
+057950      88 W-ANNULLA                  VALUE ".A".                   WCOMMONW
+057960      88 W-PROSEGUI                 VALUE ".P".                   WCOMMONW
+057970     25 W-NR-PAGINA-10-99           PIC 99.                       WCOMMONW
+057980     25 FILLER REDEFINES W-NR-PAGINA-10-99.                       WCOMMONW
+057990      30 W-NR-PAGINA-1-9            PIC 9.                        WCOMMONW
+058000      30 FILLER                     PIC X.                        WCOMMONW
+058010    20 FILLER REDEFINES W-ULT-MESS-COMANDO.                       WCOMMONW
+058020     25 W-ULT-MESS-2                PIC X.                        WCOMMONW
+058030      88 W-COMANDO                  VALUE ".".                    WCOMMONW
+058040     25 FILLER                      PIC X.                        WCOMMONW
+058050     25 FILLER                      PIC X.                        WCOMMONW
+058060       88 W-PAGINA-1-9              VALUE "1" THRU "9".           WCOMMONW
+058070     25 FILLER                      PIC X.                        WCOMMONW
+058080      88 W-PAGINA-10-99             VALUE "0" THRU "9".           WCOMMONW
+058090    20   W-ZONA-MESSAGGI-FISSI.                                   WCOMMONW
+058100      25 W-ZONA-MESSAGGI-PUNTO.                                   WCOMMONW
+058110       30 W-NR-MESS-PUNTO           PIC S9(4)  COMP.              WCOMMONW
+058120      30  W-PUNTO-CS.                                             WCOMMONW
+058130       35  W-PUNTO                  PIC X.                        WCOMMONW
+058140       35  FILLER                   PIC XXX.                      WCOMMONW
+058150      30  W-PUNTO-CF                PIC X(4).                     WCOMMONW
+058160      30  W-PUNTO-CO                PIC X(4).                     WCOMMONW
+058170      30  W-PUNTO-A                 PIC X(4).                     WCOMMONW
+058180      30  W-PUNTO-P                 PIC X(4).                     WCOMMONW
+058190      30  W-PUNTO-V                 PIC X(4).                     WCOMMONW
+058200      30  W-PUNTO-PP                PIC X(4).                     WCOMMONW
+058210      30  W-PUNTO-PS                PIC X(4).                     WCOMMONW
+058220      30  W-PUNTO-I                 PIC X(4).                     WCOMMONW
+058230      30  W-PUNTO-AR                PIC X(4).                     WCOMMONW
+058240    25 FILLER REDEFINES W-ZONA-MESSAGGI-PUNTO.                    WCOMMONW
+058250     30 FILLER                      PIC XX.                       WCOMMONW
+058260     30   W-MESS-FISSO    PIC X(4) OCCURS 10                      WCOMMONW
+058270                            INDEXED BY  I-W-MESS-FISSO.           WCOMMONW
+058280*                                                                 WCOMMONW
+058290    15  W-FLAG-LAVORO               PIC S9(4)  COMP.              WCOMMONW
+058300     88  W-FINE-LAVORO              VALUE 1.                      WCOMMONW
+058310     88  W-LAVORO-CONTINUO          VALUE 0.                      WCOMMONW
+058320   15   W-DATI-GENERALI.                                          WCOMMONW
+058330    20   W-SIGLA-TERMINALE          PIC X(4).                     WCOMMONW
+058340    20   W-SIGLA-OUT-ASSOCIATO.                                   WCOMMONW
+058350      25    W-TIPO-TER       PIC XX.                              WCOMMONW
+058360      25    W-NR-OUT-ASSOCIATO    PIC XX.                         WCOMMONW
+058370    20   W-TIPO-ASSOCIAZIONE        PIC XX.                       WCOMMONW
+058380    20   W-INDICI-W-COMMON.                                       WCOMMONW
+058390     25   W-INDICE-1                PIC S9(4) COMP.               WCOMMONW
+058400     25   W-INDICE-2                PIC S9(4) COMP.               WCOMMONW
+058410     25   W-INDICE-3                PIC S9(4) COMP.               WCOMMONW
+058420     25   W-INDICE-4                PIC S9(4) COMP.               WCOMMONW
+058430     25   W-INDICE-5                PIC S9(4) COMP.               WCOMMONW
+058440     25   W-INDICE-6                PIC S9(4) COMP.               WCOMMONW
+058450     25   W-INDICE-7                PIC S9(4) COMP.               WCOMMONW
+058460     25   W-INDICE-8                PIC S9(4) COMP.               WCOMMONW
+058470*           USATO COME FLAG PER ROUTINES DEL E IMAGE              WCOMMONW
+058480    20   W-INDICI-W-COMMON-RID REDEFINES W-INDICI-W-COMMON.       WCOMMONW
+058490     25   W-INDICE                  PIC S9(4) COMP OCCURS 8       WCOMMONW
+058500                                    INDEXED BY I-W-INDICE.        WCOMMONW
+058510    20   W-SIGLA-UTENTE             PIC X(8).                     WCOMMONW
+058520    20   W-DATA-DEL-GIORNO.                                       WCOMMONW
+058530     25   W-FORMATO-INTERNO         PIC 9(8) COMP.                WCOMMONW
+058540     25   W-FORMATO-ESTERNO-1       PIC X(8).                     WCOMMONW
+058550     25   W-FORMATO-GG-MM-AA REDEFINES W-FORMATO-ESTERNO-1        WCOMMONW
+058560                                    PIC X(8).                     WCOMMONW
+058570     25   W-FORMATO-ESTERNO-2       PIC X(12).                    WCOMMONW
+058580     25 W-FORMATO-GG-MMM-AAAA REDEFINES W-FORMATO-ESTERNO-2       WCOMMONW
+058590                                    PIC X(12).                    WCOMMONW
+058600     25 W-FORMATO-GGMMAA.                                         WCOMMONW
+058610       30  W-GG           PIC 99.                                 WCOMMONW
+058620       30 W-MM            PIC 99.                                 WCOMMONW
+058630       30 W-AA            PIC 99.                                 WCOMMONW
+058640    20   W-PARAMETRI-UTE.                                         WCOMMONW
+058650     25   W-CODICE-FISCALE          PIC X(16).                    WCOMMONW
+058660     25   W-CONTI-BASE.                                           WCOMMONW
+058670      30   W-CLIENTI-ITA            PIC 9(4) COMP.                WCOMMONW
+058680      30   W-CLIENTI-EXP            PIC 9(4) COMP.                WCOMMONW
+058690      30   W-FORNITORI              PIC 9(4) COMP.                WCOMMONW
+058700      30   W-AGENTI-ITA             PIC 9(4) COMP.                WCOMMONW
+058710      30   W-AGENTI-EXP             PIC 9(4) COMP.                WCOMMONW
+058720      30   W-PORTAF-ITA             PIC 9(4) COMP.                WCOMMONW
+058730      30   W-PORTAF-EXP             PIC 9(4) COMP.                WCOMMONW
+058740      30   W-I-V-A                  PIC 9(4) COMP.                WCOMMONW
+058750      30   W-RICAVI-ITA-INV         PIC 9(4) COMP.                WCOMMONW
+058760      30   W-RICAVI-ITA-PE          PIC S9(4) COMP.               WCOMMONW
+058770      30   W-RICAVI-EXP-INV         PIC S9(4) COMP.               WCOMMONW
+058780      30   W-RICAVI-EXP-PE          PIC S9(4) COMP.               WCOMMONW
+058790      30   W-RICAVI-MP              PIC 9(4) COMP.                WCOMMONW
+058800      30   W-TRASPORTI              PIC 9(4) COMP.                WCOMMONW
+058810      30   W-IMBALLI                PIC 9(4) COMP.                WCOMMONW
+058820      30   W-SCONTI                 PIC 9(4) COMP.                WCOMMONW
+058830      30   W-BANCHE                 PIC 9(4) COMP.                WCOMMONW
+058840      30   W-DEBIT-DIV              PIC 9(4) COMP.                WCOMMONW
+058850      30   W-CREDIT-DIV             PIC 9(4) COMP.                WCOMMONW
+058860      30   W-EFFETTI-SCONTO         PIC 9(4) COMP.                WCOMMONW
+058870      30   W-EFFETTI-SBF            PIC 9(4) COMP.                WCOMMONW
+058880      30   W-EFFETTI-DOPO-INCASSO   PIC 9(4) COMP.                WCOMMONW
+058890      30   W-SPESE-VARIE-BOLLI      PIC 9(4) COMP.                WCOMMONW
+058900      30   W-RICAVI-CAUZ            PIC 9(4) COMP.                WCOMMONW
+058910      30   W-COSTI                  PIC 9(4) COMP.                WCOMMONW
+058920      30   W-FORN-ANTICIPI          PIC 9(4) COMP.                WCOMMONW
+058930      30   W-CLIENTI-ANTICIPI       PIC 9(4) COMP.                WCOMMONW
+058940      30   W-CONTO-RAG-1            PIC 9(4) COMP.                WCOMMONW
+058950      30   W-CONTO-RAG-2            PIC 9(4) COMP.                WCOMMONW
+058960      30   W-PERDITE-PROFITTI       PIC 9(4) COMP.                WCOMMONW
+058970      30   W-BILANCIO-CHIUSURA      PIC 9(4) COMP.                WCOMMONW
+058980      30   W-BILANCIO-APERTURA      PIC 9(4) COMP.                WCOMMONW
+058990     25   W-CONTI-BASE-RID REDEFINES W-CONTI-BASE.                WCOMMONW
+059000      30   W-CONTO-BASE             PIC 9(4) COMP OCCURS 32       WCOMMONW
+059010                                    INDEXED BY I-W-CONTO-BASE.    WCOMMONW
+059020     25   W-TIPO-LANCIO             PIC S9(4) COMP.               WCOMMONW
+059030     25   W-NUM-TERM                PIC  9(4) COMP.               WCOMMONW
+059040     25   W-UTENTE                  PIC X(8).                     WCOMMONW
+059050     25   W-GRUPPO                  PIC X(8).                     WCOMMONW
+059060     25   W-ACCOUNT                 PIC X(8).                     WCOMMONW
+059070     25   W-IND-REC-PARAM           PIC S9(9) COMP.               WCOMMONW
+      *conv                                                             WCOMMONW
+      * directory di lavoro                                             WCOMMONW
+           25 AREE-VARIE-MENUTREE.                                      WCOMMONW
+             30 W-DIRECTORY               PIC X(60).                    WCOMMONW
+      *conv-end                                                         WCOMMONW
+059080     25   W-PARAMETRI-FUNZIONE      PIC X(144).                   WCOMMONW
+059090     25   W-PAR-FUNZ-RID  REDEFINES W-PARAMETRI-FUNZIONE.         WCOMMONW
+059100      30   W-FLAGS.                                               WCOMMONW
+059110       35   W-FLAG-1                PIC X.                        WCOMMONW
+059120       35   W-FLAG-2                PIC X.                        WCOMMONW
+059130       35   W-FLAG-3                PIC X.                        WCOMMONW
+059140       35   W-FLAG-4                PIC X.                        WCOMMONW
+059150       35   W-FLAG-5                PIC X.                        WCOMMONW
+059160       35   W-FLAG-6                PIC X.                        WCOMMONW
+059170       35   W-FLAG-7                PIC X.                        WCOMMONW
+059180       35   W-FLAG-8                PIC X.                        WCOMMONW
+059190*                                                                 WCOMMONW
+059200      30   FILLER                   PIC X(136).                   WCOMMONW
+059210*                                                                 WCOMMONW
+059220*                                                                 WCOMMONW
+059230*                                                                 WCOMMONW
+059240*CONTROL LIST                                                     WCOMMONW

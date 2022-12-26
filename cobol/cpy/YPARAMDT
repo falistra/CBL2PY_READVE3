@@ -1,0 +1,32 @@
+           .                                                            YPARAMDT
+      *IF X7=OFF                                                        YPARAMDT
+      *CONTROL NOLIST                                                   YPARAMDT
+      *IF                                                               YPARAMDT
+      *                                           ********************* YPARAMDT
+      *          ***********************************                    YPARAMDT
+      *          *  REC-PARAMDT            LL=150  *                    YPARAMDT
+      *          ***********************************                    YPARAMDT
+         10   ENTRY-PARAM-DETAIL.                                       YPARAMDT
+          15  C-AZIENDA                   PIC 9(4)  COMP.               YPARAMDT
+          15  TIPO-PARAMETRI              PIC 9(4) COMP.                YPARAMDT
+            88  P-ANAGRAFICI              VALUE 1.                      YPARAMDT
+            88  P-ORDINI                  VALUE 2.                      YPARAMDT
+            88  P-MAGAZZINO               VALUE 3.                      YPARAMDT
+            88  P-CONTAB-GEN              VALUE 4.                      YPARAMDT
+            88  P-CONTAB-IND              VALUE 5.                      YPARAMDT
+            88  P-CONTAB-FIN              VALUE 6.                      YPARAMDT
+            88  P-DISTINTA-BASE           VALUE 7.                      YPARAMDT
+            88  P-FATTURAZIONE            VALUE 8.                      YPARAMDT
+            88  P-PAGHE                   VALUE 9.                      YPARAMDT
+            88  P-EXTRAMAG                VALUE 13.                     YPARAMDT
+            88  P-PROCEDURE-CED           VALUE 15.                     YPARAMDT
+            88  P-SUPERMAG                VALUE 23.                     YPARAMDT
+            88  P-RIPRADI                 VALUE 55.                     YPARAMDT
+            88  P-SERVIZI                 VALUE 99.                     YPARAMDT
+          15  STRINGA-PARAMETRI           PIC X(144).                   YPARAMDT
+          15  VALIDITA-REC                PIC XX.                       YPARAMDT
+          88 ANNULLATO                    VALUE "**".                   YPARAMDT
+      *                                                                 YPARAMDT
+      *CONTROL LIST                                                     YPARAMDT
+      *                                                                 YPARAMDT
+      *                                                                 YPARAMDT

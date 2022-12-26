@@ -1,0 +1,70 @@
+      *********  ^ Non deve essere Azzerato   ***************           WPARAM13
+           .                                                            WPARAM13
+      *IF X9=OFF                                                        WPARAM13
+      *CONTROL NOLIST                                                   WPARAM13
+      *IF                                                               WPARAM13
+      *                                           ********************* WPARAM13
+      *            ************************************                 WPARAM13
+      *            * REC PARAMETRI MAGAZZINO  LL:144  *                 WPARAM13
+      *            ************************************                 WPARAM13
+      *                                                                 WPARAM13
+           30     CAMPI-FLAG-13.                                        WPARAM13
+            35    FLAG-1                    PIC X.                      WPARAM13
+            35    FLAG-2                    PIC X.                      WPARAM13
+            35    FLAG-3                    PIC X.                      WPARAM13
+            35    FLAG-4                    PIC X.                      WPARAM13
+            35    FLAG-5                    PIC X.                      WPARAM13
+            35    FLAG-6                    PIC X.                      WPARAM13
+            35    FLAG-7                    PIC X.                      WPARAM13
+            35    FLAG-8                    PIC X.                      WPARAM13
+            35    FILLER-FLAG               PIC X(24).                  WPARAM13
+           30     CAMPI-FLAG-RID REDEFINES CAMPI-FLAG-13.               WPARAM13
+            35    CAMPO-FLAG                PIC X OCCURS 32             WPARAM13
+                                            INDEXED BY I-FLAG-13.       WPARAM13
+           30     CAMPI-DATE-13.                                        WPARAM13
+            35    DATA-BOLLA-TAGLIO-TESSUTO       PIC S9(8) COMP.       WPARAM13
+            35    DATA-BOLLA-RESI-PF REDEFINES                          WPARAM13
+                                           DATA-BOLLA-TAGLIO-TESSUTO    WPARAM13
+                                                      PIC S9(8) COMP.   WPARAM13
+            35    DATA-BOLLA-TAGLIO-INTERNI       PIC S9(8) COMP.       WPARAM13
+            35    DATA-BOLLA-TAGLIO-FODERE        PIC S9(8) COMP.       WPARAM13
+            35    DATA-BOLLA-MATERASSO            PIC S9(8) COMP.       WPARAM13
+            35    DATA-TRAVASO REDEFINES DATA-BOLLA-MATERASSO           WPARAM13
+                                                      PIC S9(8) COMP.   WPARAM13
+            35    DATA-RIEP-MAG                   PIC S9(8) COMP.       WPARAM13
+            35    DATA-6                          PIC S9(8) COMP.       WPARAM13
+            35    DATA-7                          PIC S9(8) COMP.       WPARAM13
+            35    DATA-8                          PIC S9(8) COMP.       WPARAM13
+           30     CAMPI-DATE-RID REDEFINES CAMPI-DATE-13.               WPARAM13
+            35    CAMPO-DATA                PIC S9(8) COMP OCCURS 8     WPARAM13
+                                            INDEXED BY I-CAMPO-DATA-13. WPARAM13
+           30     CAMPI-NUMERI-13.                                      WPARAM13
+            35    NUM-BOLLA-RESI-PF                   PIC S9(8) COMP.   WPARAM13
+      *********  ^ Numero di partenza  350001 ***************           WPARAM13
+            35    NUM-BOLLA-TAGLIO-INTERNI            PIC S9(8) COMP.   WPARAM13
+            35    NUM-BOLLA-TAGLIO-FODERE             PIC S9(8) COMP.   WPARAM13
+            35    NUM-BOLLA-MATERASSO                 PIC S9(8) COMP.   WPARAM13
+            35    NUM-TRAVASO REDEFINES NUM-BOLLA-MATERASSO             WPARAM13
+                                                      PIC S9(8) COMP.   WPARAM13
+            35    NUM-BUONO-PRELIEVO                  PIC S9(8) COMP.   WPARAM13
+            35    NUM-CONSEGNA-NO-BOLLA               PIC S9(8) COMP.   WPARAM13
+            35    NUM-CONSEGNA-BOLLA                  PIC S9(8) COMP.   WPARAM13
+      *********  ^ Numero di partenza  090001 ***************           WPARAM13
+            35    NUMERO-PEZZA                        PIC S9(8) COMP.   WPARAM13
+      *********  ^ Non deve essere Azzerato   ***************           WPARAM13
+           30     CAMPI-NUMERI-RID REDEFINES CAMPI-NUMERI-13.           WPARAM13
+            35    CAMPO-NUMERO              PIC 9(8)  COMP OCCURS 8     WPARAM13
+                                            INDEXED BY I-CAMPO-NUM-13.  WPARAM13
+           30     CAMPI-CHIAVE-13.                                      WPARAM13
+            35    KEY-1                     PIC X(4).                   WPARAM13
+            35    KEY-2                     PIC X(4).                   WPARAM13
+            35    KEY-3                     PIC X(4).                   WPARAM13
+            35    KEY-4                     PIC X(4).                   WPARAM13
+           30     CAMPI-CHIAVE-RID REDEFINES CAMPI-CHIAVE-13.           WPARAM13
+            35    CAMPO-CHIAVE              PIC X(4) OCCURS 4           WPARAM13
+                                  INDEXED BY I-CAMPO-KEY-13.            WPARAM13
+           30    PARAMETRI-VARI             PIC X(32).                  WPARAM13
+      *                                                                 WPARAM13
+      *CONTROL LIST                                                     WPARAM13
+      *                                                                 WPARAM13
+      *                                                                 WPARAM13

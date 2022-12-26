@@ -1,0 +1,27 @@
+           .                                                            DANCODMT
+      *IF X9=OFF                                                        DANCODMT
+      *CONTROL NOLIST                                                   DANCODMT
+      *IF                                                               DANCODMT
+           15 C-MAT-TRANSITO.                                           DANCODMT
+             20  MODELLO                  PIC 9(7).                     DANCODMT
+             20 MOD-RID  REDEFINES MODELLO.                             DANCODMT
+              25  COLLEZIONE              PIC 9.                        DANCODMT
+              25  CLASSE                  PIC 99.                       DANCODMT
+              25  STAGIONE                PIC 9.                        DANCODMT
+              25  PROGR-MOD               PIC 99.                       DANCODMT
+              25  ANNO                    PIC 9.                        DANCODMT
+             20  ARTICOLO                 PIC 9(5).                     DANCODMT
+             20 ART-RID  REDEFINES ARTICOLO.                            DANCODMT
+              25 GR-MERC                  PIC 99.                       DANCODMT
+              25 FILLER REDEFINES GR-MERC.                              DANCODMT
+                30 VEST-A                 PIC 9.                        DANCODMT
+                30 PEZZO-A                PIC 9.                        DANCODMT
+              25 PROGR-ART                PIC 999.                      DANCODMT
+              25 FILLER REDEFINES PROGR-ART.                            DANCODMT
+               30 FILLER                  PIC 9.                        DANCODMT
+               30 PREFISSO-V-F            PIC 9.                        DANCODMT
+               30 SOCIETA-MOD             PIC 9.                        DANCODMT
+             20  COLORE                   PIC 999.                      DANCODMT
+      *                                                                 DANCODMT
+           15 C-MAT-TRANS-RID REDEFINES C-MAT-TRANSITO PIC 9(15).       DANCODMT
+      *CONTROL LIST                                                     DANCODMT
