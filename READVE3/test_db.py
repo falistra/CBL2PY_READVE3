@@ -18,15 +18,15 @@ query = """
 select * from CONFATT where conto = 10010101;
 """
 
-# rowset = session.execute(text(query))
-# for r in rowset:
-#     for k in r._mapping:
-#         print(k,r._mapping[k])
-#     print(r)
-
 query = """
-select * from SITPF where MAG  = '007' limit 2
+select * from ANAMAT where C_MAT = 101001080006088;
 """
+
+rowset = session.execute(text(query))
+for r in rowset:
+    for k in r._mapping:
+        print(k,r._mapping[k])
+    print(r)
 
 from config import MYSQL_HOST
 from config import MYSQL_USER
@@ -46,11 +46,13 @@ def mysql_engine(database_name, echo=False):
 	return engine
 
 
-engine = mysql_engine('reretis', echo=False)
-conn = engine.connect()
-result = conn.execute(text(query))
-for row in result:
-    print(row._mapping)
+# engine = mysql_engine('reretis', echo=False)
+# conn = engine.connect()
+# result = conn.execute(text("select * from SITPF where MAG  = '007' limit 1"))
+# for row in result:
+# 	for k in row._mapping:
+# 		print(k,row._mapping[k])
+# 	print(row)
 
 # for k in data._mapping:
 #     print(k,data._mapping[k])
@@ -59,3 +61,12 @@ for row in result:
 
 # (row,rc) = mysql_cursor(text(query), session)
 # rowset = db_access_core.mysql_dict_conn(text(query), session)
+
+# query = """
+# select * from ANAMAT where C_MAT = 101001080006088;
+# """
+# rowset = session.execute(text(query))
+# for r in rowset:
+#     for k in r._mapping:
+#         print(k,r._mapping[k])
+#     print(r)

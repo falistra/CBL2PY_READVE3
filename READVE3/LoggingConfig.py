@@ -32,4 +32,4 @@ log_config = {
     },
 }
 
-config.dictConfig(log_config)
+# config.dictConfig(log_config)

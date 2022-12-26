@@ -1,5 +1,4 @@
 import db_access_core
-from config import MYSQL_HOST
 from config import MYSQL_USER
 from config import MYSQL_PASSWORD
 from config import MYSQL_SOCKET
@@ -22,7 +21,7 @@ session = db_access_core.mysql_connect('reretis', echo=False)
 
 from sqlalchemy.sql import text
 
-query_NEGOZIO_CATEG = text("""
+sql_NEGOZIO_CATEG = text("""
     SELECT NEGOZIO                                               
     FROM NEGOZIO_ANAG_CATEGORIA 
     JOIN NEGOZIO_CATEGORIA USING (ID_CATEGORIA)
@@ -30,24 +29,49 @@ query_NEGOZIO_CATEG = text("""
          order by NEGOZIO 
 """)
 
-query_SELECT_ANAMAT_CST = text("""
+sql_SELECT_ANAMAT_CST = text("""
 SELECT CST_STD, CST_STD_2                                                      
     FROM ANAMAT_CST                                               
     WHERE C_MAT   = :ANACST_C_MAT 
 """)
 
-query_SELECT_ANACON = text("""
+sql_SELECT_ANACON = text("""
 select CONTO,D_CTO,FLAG_8,FLAG_9 from ANACON where conto = :CONTO_IN_R;
 """)
 
-query_SELECT_INDIRIZ = text("""
+sql_SELECT_INDIRIZ = text("""
 select * from INDIRIZ where conto = :CONTO_IN_R;
 """)
 
-query_SELECT_LISTINO = text("""
+sql_SELECT_LISTINO = text("""
 select LIST,DVS from CONFATT where conto = :CONTO_IN_R;
 """)
 
-query_SITPF3 = """
+sql_SITPF3 = """
 select * from SITPF where MAG  = :MAG_INPUT
 """
+
+sql_SELECT_ANAMAT = text("""
+select * from ANAMAT where C_MAT = :C_MAT;
+""")
+
+sql_SELECT_ANAMAT = text("""
+select * from DPARAM where C-AZIENDA = 0;
+""")
+
+sql_INSERT_MOV_SKU = text("""
+               INSERT INTO MOV_SKU                                          
+               VALUES(
+                       NULL,
+                      :MOVSKU-RIF-INTERNO,
+                      :MOVSKU-CMAT,
+                      :MOVSKU-TG,
+                      :MOVSKU-BARUNI,
+                      :MOVSKU-CONTO,                                                                     
+                      :MOVSKU-MAG,
+                      :MOVSKU-SKU,
+                      :MOVSKU-IS-BARUNI-READ,
+                      :MOVSKU-IS-BARUNI-CERTIFIED,
+                      :MOVSKU-SKU-FATTURAZIONE
+                      )                                     
+""")
