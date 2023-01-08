@@ -4,25 +4,31 @@ session = db_access_core.mysql_connect('reretis', echo=False)
 from sqlalchemy.sql import text
 
 query = """
-    SELECT NEGOZIO                                               
-    FROM NEGOZIO_ANAG_CATEGORIA 
-    JOIN NEGOZIO_CATEGORIA USING (ID_CATEGORIA)
-         where DESC_CATEGORIA = 'NEGOZI_ITALIA_B2C_SOC' 
-         order by NEGOZIO 
-"""
-query = """
 select * from INDIRIZ where conto = 10010101;
 """
 
 query = """
 select * from CONFATT where conto = 10010101;
 """
+query = """
+select * from PREZZI limit 1; --- where C_MAT = 101001080006088;
+"""
 
 query = """
 select * from ANAMAT where C_MAT = 101001080006088;
 """
 
+query = """
+    SELECT NEGOZIO                                               
+    FROM NEGOZIO_ANAG_CATEGORIA 
+    JOIN NEGOZIO_CATEGORIA USING (ID_CATEGORIA)
+         where DESC_CATEGORIA = 'NEGOZI_ITALIA_B2C_SOC' 
+         order by NEGOZIO 
+"""
 rowset = session.execute(text(query))
+rlist = [r for r, in rowset]
+print(rlist)
+
 for r in rowset:
     for k in r._mapping:
         print(k,r._mapping[k])

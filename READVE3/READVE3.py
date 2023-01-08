@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
 import sys
 import re
+from collections import OrderedDict
 
 import ws_rest
 import db_access_core
@@ -14,6 +17,9 @@ import logging
 from logging import config
 from LoggingConfig import log_config      # configurazione del logger
 config.dictConfig(log_config)
+
+# solo per compatibilta con python 2.7
+input = raw_input
 
 class Program():
     def __init__(self,loglevel='info'):
@@ -33,52 +39,65 @@ class Program():
         engine = db.mysql_engine('reretis', echo=False)
         self.conn = engine.connect()
 
-        pass
-
     def READVE3(self):
         logging.debug("====INIZIO READVE3====")
+        self.NTGOCCURS = 10
 
-        self.TABELLA_ARTICOLI_LETTI = {
-            "ART" : {
-                "QTA_TAGLIA" : [0]*10,
-                "PREZZO-ELEM" : 0
+        self.TABELLA_NO_GIAC = [
+            {   "C_MAT" : None, 
+                "PREZZO" : None,
+                "D-MAT" : None,                                      
+                "CAUSALE" : None,                                     
+                "CAUSALE-NO-PRZ" : None                     
             }
-        }
-        self.TABELLA_SINGOLI = {}
-
-        self.TRATTA_DEV() # OK
-        self.CARICA_B2C_NO_DT() # OK
-        self.TRATTA_IMPEGNATO() # OK
-        self.TRATTA_NEG()
+        ]
 
 
-    def TRATTA_DEV(self): # OK	# Linea Source Cobol: 2897
+        self.TABELLA_SINGOLI = [ # 1421
+            {
+                "C-MAT" : None,
+                "CONT" : None,
+                "D-MAT" : None,
+                "PREZZO" : None,
+                "PRIMA-TG" : None,
+                "SKU" : None
+            }
+        ]
+
+        self.TRATTA_DEV() # 1047
+        self.CARICA_B2C_NO_DT() # 1054
+        self.TRATTA_IMPEGNATO() # 1061
+        self.TRATTA_NEG() # 1063
+
+
+    def TRATTA_DEV(self): # OK	# 1071
         while (True):
             print("Disp. USCITA >> ")
             try:
-                self.DEV_IN = int(input())
+                DEV_IN = int(input())
             except KeyboardInterrupt:
                 sys.exit(1)
             except:
                 print("Dest. USCITA Err. ")
                 continue
-            if self.DEV_IN not in self.DESTINO_VALIDO:
-                print("Dest. USCITA Err. ",self.DEV_IN)
+            
+            self.DESTINO_VALIDO = [73, 90, 94, 27, 28, 29, 34, 22]
+            if DEV_IN not in self.DESTINO_VALIDO:
+                print("Dest. USCITA Err. ",DEV_IN)
                 continue
             else:
                 break
+        self.DESTINO_USCITA = DEV_IN
 
-    def CARICA_B2C_NO_DT(self): # OK
+    def CARICA_B2C_NO_DT(self): # 4246
         logging.debug("=== select sql_NEGOZIO_CATEG ===")
-        self.TAB_B2C_NO_DT = self.session.execute(db.sql_NEGOZIO_CATEG)
+        rowset = self.session.execute(db.sql_NEGOZIO_CATEG)
+        self.TAB_B2C_NO_DT = [r for r, in rowset]
         logging.debug(str(self.TAB_B2C_NO_DT))
-        # 01 TAB-B2C-NO-DT.
-        #   05 EL-B2C-NO-DT  OCCURS 100.
-        #     10 MAG-B2C-NO-DT  PIC S9(4) COMP.
 
-    def TRATTA_IMPEGNATO(self): # OK
+    def TRATTA_IMPEGNATO(self): # 1090
         while (True):
-            print("Si vuole eliminare impegnato ?(SI/NO)")
+            print("Si vuole eliminare impegnato ? (SI/NO)")
             try:
                 self.DISIMPEGNA = input()
             except KeyboardInterrupt:
@@ -89,21 +108,29 @@ class Program():
             else:
                 break
 
-    def TRATTA_NEG(self):
-        while  (self.VERIF_NEG()): # OK
-            self.VERIF_MAG() # OK
-            self.F_V_INPUT = "V"  # self.VERIF_F_V()
-            self.VERIFICA_SOC() # OK
-            self.CARICA_TAB_UNICO_DDT() # OK
-            if (self.DISIMPEGNA == "SI"):
-                self.CICLO_DISIMPEGNO() # OK
-            self.INIZIA_TAB_ART() # OK
-            self.INIZIA_TAB_SING() # OK
-            self.TRATTA_OLD_NEW()
-            self.TRATTA_LETTI()
+    def TRATTA_NEG(self): # 1106
+        while  (self.VERIF_NEG()): # 1110
 
-    def VERIF_NEG(self):
-        while (True):
+            self.PREZZO_TOT = 0
+
+            self.VERIF_MAG() # 1117
+            self.F_V_INPUT = "V"  # 1121 Fallato o Validoself.VERIF_F_V()
+            NEG_OK = self.VERIFICA_SOC() # 1140 OK
+            if not NEG_OK:  return
+
+            NEG_OK = self.CARICA_TAB_UNICO_DDT() # 1145 OK
+            if not NEG_OK:  return
+                        
+            if (self.DISIMPEGNA == "SI"): # 1158
+                self.CICLO_DISIMPEGNO() # OK
+
+            self.INIZIA_TAB_ART() # 1162 OK
+            self.INIZIA_TAB_SING() # 1163 OK
+            self.TRATTA_OLD_NEW() # 1164    
+            self.TRATTA_LETTI() # 1165
+
+    def VERIF_NEG(self): # 1504
+        while(True):
             print("CONTO cliente (8 cifre)")
             print("  (END/end=fine)")
             try:
@@ -114,12 +141,12 @@ class Program():
                 return False 
             try:
                 self.CONTO_IN_R = int(self.CONTO_IN)
-                self.NEG = self.CONTO_IN[5:7]
+                self.NEG_IN = self.CONTO_IN[5:7]
             except:
                 print("CODICE non numerico")
                 continue
             data = self.session.execute(db.sql_SELECT_ANACON,{"CONTO_IN_R":self.CONTO_IN_R})
-           
+            
             # lettura REC-ANACON COPY YANACON
             if not data:
                 print("Manca CLIENTE ")
@@ -129,7 +156,7 @@ class Program():
                 break
             logging.debug(rec)
             # logging.debug(str(row2dict(rec)))
-          
+            
             self.REC_ANACON = {
                 "CONTO" : rec['CONTO'], 
                 "D-CONTO" : rec['D_CTO'],
@@ -137,12 +164,14 @@ class Program():
                 "FLAG-ANA-9" : True if rec['FLAG_9'] == "B" else False
             }
             # lettura REC-ANACON COPY YANACON
- 
+
             self.D_CONTO = self.REC_ANACON["D-CONTO"]
             self.FLAG_ANACON = self.REC_ANACON["FLAG-ANA-8"]
             self.FLAG_DT_ESTERO = self.REC_ANACON["FLAG-ANA-9"]
 
             self.CAMPI_ANAGRAFICI = {
+                "CONTO-IN": self.CONTO_IN,
+                "D-CONTO-MEM": self.REC_ANACON["CONTO"],
                 "D-CONTO-AGG-MEM": None,
                 "INDIRIZZO-STD" : None,
                 "INDIRIZZO-COM": None,                   
@@ -156,12 +185,12 @@ class Program():
                 "PROV-C-COM": None,
                 "CONTO-FATTURA-MEM" : None                      
             }
-            rec = self.LEGGI_IND()
+            rec = self.LEGGI_IND() # 1547
             if rec == False:    return False
-            self.MUOVI_IND(rec)
-            self.MUOVI_CAP(rec)
-            self.SCEGLI_CONTO_FATTURA(rec)
-            self.CERCA_LISTINO()
+            self.MUOVI_IND(rec) # 1548
+            self.MUOVI_CAP(rec)# 1549
+            self.SCEGLI_CONTO_FATTURA(rec) # 1551
+            self.CERCA_LISTINO() # 1551
             return True
 
 
@@ -177,28 +206,39 @@ class Program():
         logging.debug(rec)
 
         # REC-INDIRIZZI  COPY YINDIRIZ
-        self.REC_INDIRIZZI = { # 1607
-                "D-AGG" : " "*24,
-                "STATO" : " "*4,
-                "SIGLA-PROV" : [" "*2," "*2],
-                "INDIRIZZO" : [" "*66," "*66],
-                "CAP" : [0,0],
-                "PRIORITA" : 0,
-                "TELEFONO" : 0,
-                "TELEX" : 0
-        }
+        self.REC_INDIRIZZI = rec 
+        # { # 1607
+        #         "D-AGG" : " "*24,
+        #         "STATO" : " "*4,
+        #         "SIGLA-PROV" : [" "*2," "*2],
+        #         "INDIRIZZO" : [" "*66," "*66],
+        #         "CAP" : [0,0],
+        #         "PRIORITA" : 0,
+        #         "TELEFONO" : 0,
+        #         "TELEX" : 0
+        # }
         return rec
 
     def MUOVI_IND(self,rec):
         self.CAMPI_ANAGRAFICI["INDIRIZZO-STD"] = rec["INDZ_1"]
         try:
+            logging.debug("{}".format(rec["INDZ_1"]))
             (INDIRIZZO,LOCALITA) = rec["INDZ_1"].split(";")
+            logging.debug("{} {}".format(INDIRIZZO,LOCALITA))
             self.CAMPI_ANAGRAFICI["INDIRIZZO-COM"] = INDIRIZZO
             self.CAMPI_ANAGRAFICI["LOCALITA-COM"] = LOCALITA
-            (INDIRIZZO1,LOCALITA1) = rec["INDZ_2"].split(";")
-            self.CAMPI_ANAGRAFICI["INDIRIZZO-C-COM"] = INDIRIZZO1
-            self.CAMPI_ANAGRAFICI["LOCALITA-C-COM"] = LOCALITA1
-        except:
+            if rec["INDZ_2"]:
+                logging.debug("{}".format(rec["INDZ_2"]))
+                (INDIRIZZO1,LOCALITA1) = rec["INDZ_2"].split(";")
+                logging.debug("{} {}".format(INDIRIZZO1,LOCALITA1))
+                self.CAMPI_ANAGRAFICI["INDIRIZZO-C-COM"] = INDIRIZZO1
+                self.CAMPI_ANAGRAFICI["LOCALITA-C-COM"] = LOCALITA1
+            else:
+                self.CAMPI_ANAGRAFICI["INDIRIZZO-C-COM"] = ""
+                self.CAMPI_ANAGRAFICI["LOCALITA-C-COM"] = ""
+
+        except Exception as e:
+            logging.warning(e)
             logging.warning(str(self.CONTO_IN_R) + " Errore in MUOVI_IND")
         pass
 
@@ -227,22 +267,23 @@ class Program():
         self.DIVISA_MEM = rec["DVS"]
 
 
-    def VERIF_MAG(self):
+    def VERIF_MAG(self): # 3893
         while (True):
             print("MAG provenienza (3 cifre)")
             try:
-                self.MAG_INPUT = int(input())
+                self.MAG_INPUT = input() # 756
+                self.MAG_INPUT_R = int(self.MAG_INPUT)
             except KeyboardInterrupt:
                 sys.exit(1)
             except:                
                 print("MAG non numerico")
                 continue
-            if not self.MAG_INPUT in [1, 4, 6, 7, 852 , 853]:
+            if not self.MAG_INPUT_R in [1, 4, 6, 7, 852 , 853]:
                 print("accettato MAG 1, 4, 6, 7, 852 o 853")
             else:
                 break                 
 
-    def VERIFICA_SOC(self):
+    def VERIFICA_SOC(self): # 1171
         while (True):
             print("Soc >> (vuoto = tutti) ")
             try:
@@ -257,19 +298,15 @@ class Program():
                 print("Soc Err. ")
                 continue 
             else:
-                break  
+                break
+        return True  
 
-    def CARICA_TAB_UNICO_DDT(self):
-        #   MOVE   16 TO QT-LL-ELEM       OF PAR-TAB-UNICO-DDT.
-        #   MOVE    4 TO QT-LL-KEY        OF PAR-TAB-UNICO-DDT.
-        #   MOVE    1 TO QT-ADDR-KEY      OF PAR-TAB-UNICO-DDT.
-        #   MOVE 1980 TO QT-NUM-ELEM-MAX  OF PAR-TAB-UNICO-DDT.
-        #   MOVE    0 TO QT-NUM-ELEM-EFF  OF PAR-TAB-UNICO-DDT.
-
+    def CARICA_TAB_UNICO_DDT(self): # 1190
         # 4411
         # CALL "QTABELXL" USING PAR-TAB-UNICO-DDT 
         #                       TAB-UNICO-DDT 
         #                       DEP-TAB-UNICO-DDT
+        
         while(True):
             while(True):
                 try:
@@ -278,27 +315,34 @@ class Program():
                 except KeyboardInterrupt:
                     sys.exit(1)
                 if AS == "CHIUDI":
-                    continue
-                elif AS == 'tt':
-                    AS = [None]
+                    break
+                if AS == 'tt':
+                    break
                 else:
-                    z = re.match(AS,r"\s*((\d\d)(\s*,\s*\d\d)*)")
+                    z = re.match(r"^\s*((\d\d)(\s*,\s*\d\d)*)\s*$",AS)
                     if not z:
                         print("Non specificato correttamente")
                         print("deve essere una sequenza di numeri di due cifre separati da una virgola (p.e.: 12,24)") 
                         continue
                     else:
                         break
-            AS = AS.split(",")
-            AS = [_as_.strip() for _as_ in AS]
-                
+
+            if AS == "CHIUDI":
+                return False
+
+            if not AS == "tt":
+                AS = AS.split(",")
+                AS = [_as_.strip() for _as_ in AS]
+            else:
+                AS = ["TUTTI"]
+
             while(True):
                 try:
                     print("CL >> (elenco separato da ,)")
                     CL = input()
                 except KeyboardInterrupt:
                     sys.exit(1)
-                z = re.match(CL,r"\s*((\d\d)(\s*,\s*\d\d)*)")
+                z = re.match(r"^\s*((\d\d)(\s*,\s*\d\d)*)\s*$",CL)
                 if not z:
                     print("Non specificato correttamente")
                     print("deve essere una sequenza di numeri di due cifre separati da una virgola (p.e.: 01,02)") 
@@ -324,18 +368,20 @@ class Program():
                         continue
                 break
 
+            self.TAB_UNICO_DDT = OrderedDict()
+            
             for _as_ in AS:
-                self.TAB_UNICO_DDT[_as_] = {}
                 for _cl_ in CL:
-                    self.TAB_UNICO_DDT[_as_][_cl_] = {
+                    self.TAB_UNICO_DDT[(_as_,_cl_)] = { # 838
                         "MAX-CAPI" : MaxCapi,
                         "CAPI-LETTI" : 0, 
                         "magazzino" : self.MAG_INPUT,
                         "fornitore" : self.SOCIETA_INPUT
                         }
-
-            # pretty = json.dumps(self.TAB_UNICO_DDT,indent=4)
-            # print(pretty)
+            print("-------------------------------")
+            for k in self.TAB_UNICO_DDT:
+                max_capi = self.TAB_UNICO_DDT[k]["MAX-CAPI"] if self.TAB_UNICO_DDT[k]["MAX-CAPI"] else "Tutti"
+                print("AS = {} CL = {} MAX-CAPI = {}".format(k[0],k[1],max_capi))            
 
             print("CORRETTI? 'SI' per proseguire 'NO' per rifare elenco AS CL da capo")
             while(True):
@@ -353,31 +399,51 @@ class Program():
                 break
             else:
                 continue
+        return True
 
-    def CICLO_DISIMPEGNO(self):
-        session = db_access_core.mysql_connect('reretis', echo=False)
+    def CICLO_DISIMPEGNO(self): # 4461
+        # session = db_access_core.mysql_connect('reretis', echo=False)
 
-        for _as_ in self.TAB_UNICO_DDT:
-            for _cl_ in self.TAB_UNICO_DDT[_as_]:
-                json_object = {
-                    'anni_stagioni': [_as_],
-                    'magazzino': self.MAG_INPUT,
-                    'fornitore': self.SOCIETA_INPUT,
-                    'classi': [_cl_]
-                }
-                print(json_object)
-                call_rest_api = ws_rest.Call_Rest_Api_DT(session, logging.getLogger(), 'put', 
-                                            'magazzino_pf/gestione_impegni/DisimpegnaListaModelli', json_object, None)
+        for _as__cl_ in self.TAB_UNICO_DDT:
+            json_object = {
+                'anni_stagioni': _as__cl_[0],
+                'magazzino': self.MAG_INPUT,
+                'fornitore': self.SOCIETA_INPUT,
+                'classi': _as__cl_[1]
+            }
+            print(json_object)
 
-                response_status = call_rest_api.response_code
-                if response_status == 200 or response_status == 204:
-                    pass
-                else:
-                    print("ERRORE DISIMPEGNO!!!")
-                    sys.exit(1)
+            # 1394
+            # i python che vengono chiamati dai cobol sono tutti nel repo intranet3/bin/4cobol/
+            # disimpegna_capi.py del quale viene chiamata la functiona elimina_impegnati() 
+
+            return
+
+            call_rest_api = ws_rest.Call_Rest_Api_DT(self.session, logging.getLogger(), 'put', 
+                                        'magazzino_pf/gestione_impegni/DisimpegnaListaModelli',
+                                        json_object, None)
+
+            response_status = call_rest_api.response_code
+            if response_status == 200 or response_status == 204:
+                pass
+            else:
+                print("ERRORE DISIMPEGNO!!!")
+                sys.exit(1)
 
 
-    def INIZIA_TAB_ART(self):
+    def INIZIA_TAB_ART(self): # 1402
+        self.TABELLA_ARTICOLI_LETTI = {
+            "TAB-ART" : { # S9(15)
+                "D-MAT" : None, # X(7)
+                "PRIMA-TG" : None, # S9(4)
+                "PREZZO" : None, # S9(9)
+                "CAMBIO" : None, # S9(9)
+                "QTA-GIAC" : [None]*self.NTGOCCURS, # S9(8)
+                "QTA-TAGLIE" : [None]*self.NTGOCCURS, # S9(4)
+                "COSTO" : None #S9(9)
+            }
+        }
+        # 524
 # 043200 01 TABELLA-ARTICOLI-LETTI.                                               
 # 043300  03 ART-TAB-LETTI   OCCURS 5000.                                          
 # 043400   05 TAB-ART        PIC S9(15) COMP-3.                                   
@@ -393,7 +459,6 @@ class Program():
 # 044400     10 QTA-TAGLIA-TAB PIC S9(4) COMP    COPY NTGOCCURS. 
 #       *VACO*                                                            
 #          05 COSTO-TAB       PIC S9(9) COMP.
-        pass
 
     def INIZIA_TAB_SING(self):
 # 039600  05 C-MAT-SING        PIC S9(15) COMP-3.
@@ -426,7 +491,7 @@ class Program():
     def TRATTA_SITPF_3(self):
         data = self.conn.execute(db.sql_SITPF3,{"MAG_INPUT":self.MAG_INPUT})
         for rec in data:
-            rec = rec._mapping
+            rec_SITPF3 = rec._mapping
             self.C_MAT_TRANS_RID = rec["C_MAT"]
             rec_anamat_ = self.session.execute(db.sql_SELECT_ANAMAT,{'C_MAT':self.C_MAT_TRANS_RID})
             for rec_anamat in rec_anamat_:    # solo 1 rec e in formato dict
@@ -461,8 +526,7 @@ class Program():
                     self.DA_TRASFERIRE = rec["GQF%d" % IT] + rec["QICF%d" % IT]
 
                 for IC in range(1,self.DA_TRASFERIRE+1):
-                    self.C_MAT_A_BARRE = lib_dt.conv_trans_barc(rec["C_MAT"], IT)
-                    self.TRATTA_LEGGI()
+                    self.TRATTA_LEGGI(rec_SITPF3,IT)
 
     def TRATTA_LETTI(self):	# Linea Source Cobol: 4328
         while (True):
@@ -493,13 +557,12 @@ class Program():
 
                     if not self.TABELLA_SINGOLI:
                         break
-                    # 2466 LEGGI-PARAMDT
-                    self.INDIRIZZO_DPARAM = "..."
-                    self.NUMERO_DDT = None
-                    # 2467 AGG-DPARAM
-                    self.NUMERO_DDT += 1
+                    
+                    self.LEGGI_PARAMDT()
+                    self.INDIRIZZO_DPARAM = "..." # 1454
 
-
+                    self.AGG_DPARAM()
+                    
                     print("Aggiorno  ")
                     print("BOLLA n.  %s" % self.NUMERO_DDT)   
 
@@ -507,32 +570,113 @@ class Program():
                         for self.IND_BARUNI in range(len(self.PARTAB_SING)):
                              self.INSERISCI_MOVSKU()   
 
-        # self.DIR_VAR_NAME = "RETIS_DIRECTORY"
-        # print(self.DIR_VAR_NAME)
-        # self.DIR_VAR_VALUE = input()
-        # self.USER_VAR_NAME = "RETIS_UTENTE"
-        # print(self.USER_VAR_NAME)
-        # self.USER_VAR_VALUE = input()
-        # self.FILE_VAR_NAME = "dd_BARCNEG"
-        # print(self.FILE_VAR_NAME)
-        # print(self.FILE_VAR_VALUE)
-        # self.SCRIVI_RECORD()
-        # self.QT_ADDR_KEYOFPARTAB_SING = 1
-        # self.QT_LL_KEYOFPARTAB_SING = 10
-        # self.INTESTA_FILE_BC()
-        # self.SCORRI_TAB_SING()
-        # self.CALL_COMMAND()
-        # self.SCORRI_TB()
-        # self.CALL_COMMAND_2()
-        # self.SCRIVI_BOLLE()
-        # self.CHIAMA_PRINTDDT()
-        # self.DIVISA_PRIMO_LETTO = self.DIVISAOFREC_CONFATT
-        # self.STAMPA_NO_GIAC()
-        # self.TTUNLOCK()
-        # self.ALLINEA_BOLLA_ESTERO()
-        # self.AVANZA_DDT()
-        # print("premi un tasto per continuare...")
-        # self.TASTO_INP = input()
+                    FILE_VAR_VALUE_TEMPLATE = "%(USER_VAR_VALUE)s_BC_%(AA_MM_GG_DDT)s%(NUMERO_DDT)s_%(MAG_INPUT_R)s%(NEG_IN)s_B"  
+                    FILE_VAR_VALUE = FILE_VAR_VALUE_TEMPLATE % {
+                        "USER_VAR_VALUE" : "",
+                        "AA_MM_GG_DDT" : "",
+                        "NUMERO_DDT" : self.NUMERO_DDT,
+                        "MAG_INPUT_R" : self.MAG_INPUT,
+                        "NEG_IN" : self.NEG_IN
+                    }
+                    print(FILE_VAR_VALUE)
+                    FILE_BC = open(FILE_VAR_VALUE,"w")
+                    for rec in self.TABELLA_ARTICOLI_LETTI:
+                        self.SCRIVI_RECORD()
+    
+                    # 2531 
+                    if self.REC_INDIRIZZI["PRIORITA"] == "4":
+                        self.INTESTA_FILE_BC() # 2533
+                        for SING in self.TABELLA_SINGOLI:
+                            self.SCORRI_TAB_SING(SING)
+                    else:
+                        self.SCORRI_TB() # 2542
+
+                    self.SCRIVI_BOLLE() # 2545
+                    self.CHIAMA_PRINTDDT() # 2546
+
+                    if self.REC_INDIRIZZI["PRIORITA"] == "4":
+                        self.PRTBCEU8() # 2561
+
+                    if self.IND_CAPI_NO_GIAC: # > 0
+                        self.STAMPA_NO_GIAC()
+
+                    if not self.FLAG_ANACON in ['0',' ']:
+                         self.ALLINEA_BOLLE_ESTERO()
+
+                    self.AVANZA_DDT()
+                print("premi un tasto per continuare...")
+                input()
+
+
+    def ALLINEA_BOLLE_ESTERO(self): # 2587
+        pass 
+    # CALL  "PYTHON"
+    #        USING "allinea_bolle_in_estero"
+    #              "allinea_estero"
+
+    def AVANZA_DDT(self): # 2606
+        pass
+        # CALL "PYTHON" USING "avanzamento" 
+        #                      "genera_avanzamento" 
+        #                        PY-INPUT-REC-B
+        #                        PY-OUTPUT-REC-B.
+
+
+    def INTESTA_FILE_BC(self): # 3333
+        pass
+    
+    def SCORRI_TAB_SING(self,SING): # 3291
+        pass
+    
+    def SCORRI_TB(self): # 2948
+        for SING in self.TABELLA_SINGOLI:
+            self.SCORRI_TB_SING(SING) # 2971
+
+    def SCORRI_TB_SING(self,SING): # 2982
+        pass
+
+    def SCRIVI_BOLLE(self): # 2852
+        pass
+
+    def CHIAMA_PRINTDDT(): # 3671 
+        pass
+
+    def PRTBCEU8(self):
+        pass # Chiamata esterna  modulo python tabprt2single
+
+    def STAMPA_NO_GIAC(self): # 2660
+        pass # call cobol QWLPPR 2686
+
+
+
+    def SCRIVI_RECORD(self):
+        # CPY DANCODMT  C-MAT-TRANSITO
+        # 3377-3384
+        # INVERTI-QTA 3413
+        self.TABELLA_ARTICOLI_LETTI[QTA_TAGLIA] = [ -tg for tg in self.TABELLA_ARTICOLI_LETTI[QTA_TAGLIA]]
+        # PREPARA-MOVMAG 3744 , CPY YMOVMAG
+        # PERFORM PREPARA-MOVMAG # 404
+        self.CREA_MOVMAG_P_3() # 3405
+        self.AGGIORNA_SITPF_P_3() # 3407
+    
+    def CREA_MOVMAG_P_3(self): # 3776
+        pass
+    
+    def AGGIORNA_SITPF_P_3(self): # 3812
+        pass
+
+
+ 
+    def LEGGI_PARAMDT(self):
+        rec_= self.session.execute(db.sql_SELECT_DPARAM,{})
+        for rec in rec_:    # solo 1 rec e in formato dict
+            rec = rec_._mapping 
+            break        
+        self.NUMERO_DDT = rec["NUMERO_3"]
+
+    def AGG_DPARAM(self):
+        NUOVO_NUMERO_DDT = self.NUMERO_DDT + 1
+        self.conn.execute(db.sql_UPDATE_DPARAM,{"NUM-BOLLA-TAGLIO-FODERE":NUOVO_NUMERO_DDT})
 
 
     def GETBARUNI(self):
@@ -557,7 +701,7 @@ class Program():
         MOVSKU_BARUNI = self.GETBARUNI()
 
         params = {
-                      "SQL_MOVSKU-RIF-INTERNO" : None,
+                      "SQL_MOVSKU-RIF-INTERNO" : self.NUMERO_DDT,
                       "MOVSKU-CMAT" : self.COD_IN,
                       "MOVSKU-TG" : common_fun.idxtg(TAGLIA),
                       "MOVSKU-BARUNI" : MOVSKU_BARUNI,
@@ -592,11 +736,189 @@ class Program():
 
         print("ancora %s in %s"  % (self.TABELLA_ARTICOLI_LETTI[ELEM_ART]["QTA_TAGLIA"][TAGLIA], self.COD_IN[8]))
 
-    def TRATTA_LEGGI(self):
-        self.ANACST_MAG_COM = None # self.MAG_INPUT_R # 2015
-        self.ANACST_C_MAT_COM = None # 2016 MOVE C-MAT OF REC-ANAMAT TO ANACST-C-MAT-COM
+    def TRATTA_LEGGI(self,rec_SITPF3,NTG_MEM):
+        self.C_MAT_A_BARRE = lib_dt.conv_trans_barc(rec_SITPF3["C_MAT"], NTG_MEM)
+        KEY_ELEM_ART = self.COD_IN[:len(self.COD_IN)-1]
+        ELEM_ART = self.TABELLA_ARTICOLI_LETTI[KEY_ELEM_ART]
+        data = self.session.execute(db.sql_SELECT_ANAMAT,{'C_MAT':self.C_MAT_A_BARRE})
+        if not data: # IF B2C-NO-DT
+            print("Inesist. %s" % self.C_MAT_A_BARRE) 
+            return
+        for rec_ in data:    # solo 1 rec e in formato dict
+            rec = rec_._mapping 
+            break    
 
-        self.RIVALUTA_COSTO_ANAMAT()
+        if not ELEM_ART["QT-STATO"] == "0":
+            self.D_MAT_MEM  = rec["D_MAT"]
+            self.PTG_MEM = rec["P_TG"]
+
+            self.VAL_REC_MEM  = rec["VAL_REC"]
+            self.COSTO_MEM = rec["CST_STD"]
+
+            self.ANACST_C_MAT_COM = rec["C_MAT"]
+            self.ANACST_MAG_COM = self.MAG_INPUT
+
+            self.RIVALUTA_COSTO_ANAMAT()
+            # ===== DA FARE 
+
+        RISP_NO_GIAC =  RISP_NO_PREZZO = ""
+        self.PREZZO_MEM = 0
+        if not ELEM_ART["QT-STATO"] == "0" and self.REC_INDIRIZZI["QT_STATO"] == 4:
+            rc = self.CERCA_PREZZO_V()
+            if not rc: 
+               return 
+        if not ELEM_ART["QT-STATO"] == "0":
+            self.PREZZO_MEM = self.PREZZO_ANAMAT = 0
+            self.CAMBIO_MEM = 0
+            rc = self.CERCA_PREZZO()
+            if not rc: 
+               return 
+        if self.PREZZO_MEM == 0 or \
+            (self.PREZZO_MEM == self.PREZZO_ANAMAT and not self.FLAG_DT_ESTERO == 1):
+            self.PREZZO_OK = 0
+            # self.TRATTA_NO_PREZZO() # 2084
+            self.PREZZO_MEM = 0
+        else:
+            self.CAMBIO_MEM = ELEM_ART["CAMBIO_TAB"]
+            self.D_MAT_MEM = ELEM_ART["D_MAT"]
+            self.PREZZO_MEM = ELEM_ART["PREZZO"]
+
+        self.RISP_NO_PREZZO = "S" # ??
+
+        if not ELEM_ART["QT-STATO"] == "0":
+            pass
+# 12700       COMPUTE ELEM-ART = C-MAT-A-BARRE-RID / 10                          
+# 112800       MOVE D-MAT-MEM TO D-MAT-ELEM                                       
+# 112900*BUDA*                                                                    
+# 113000       MOVE PTG-MEM TO PRIMA-TG-ELEM                                      
+# 113100       MOVE PREZZO-MEM TO PREZZO-ELEM    
+#       *VACO*                                                            inizio
+#              MOVE COSTO-MEM TO COSTO-ELEM
+#       *VACO*                                                            fine
+# 113200*PRODI*                                                                   
+# 113300*      MOVE STK-CAMBIO TO CAMBIO-ELEM                                     
+# 113400       MOVE CAMBIO-MEM TO CAMBIO-ELEM                                     
+# 113500       MOVE VAL-REC-MEM TO TIPO-ANA-ELEM                                  
+# 113600       MOVE LOW-VALUE TO QTA-TAGLIE-ELEM                                  
+# 113700       MOVE QTA-GIAC OF REC-SITPF TO QTA-GIAC-ELEM                        
+# 113800     ELSE                                                                 
+# 113900       MOVE ART-TAB-LETTI(QT-INDEX-ELEM OF PARTAB-ART)                    
+# 114000                   TO ART-ELEM-LETTI                                      
+# 114100       MOVE D-MAT-ELEM TO D-MAT-MEM                                       
+# 114200       MOVE PRIMA-TG-ELEM TO PTG-MEM.                
+        PREZZO_D = self.PREZZO_MEM / 100
+        #2136
+        if rec_SITPF3["QTA_TAGLIA"][NTG_MEM]  <  ELEM_ART["QTA_TAGLIA"][NTG_MEM] :
+            print("Manca giac %s" %  self.C_MAT_A_BARRE)
+            RISP_NO_GIAC = self.TRATTA_NO_GIAC(ELEM_ART["D_MAT"],PREZZO_D) # 2142
+            if not RISP_NO_GIAC == "S":
+                return
+            
+            if RISP_NO_GIAC == "S" or ( self.RISP_NO_PREZZO == "S" and  self.FLAG_DT_ESTERO == 1) :
+                self.INSERISCI_NO_GIAC_PREZZO(RISP_NO_GIAC) # 2154
+                return
+
+        self.PREZZO_TOT +=  self.PREZZO_MEM
+
+        # 2161
+        # MOVE IND-CAPI-LETTI TO CONT-D.                                       
+        # DISPLAY CONT-D.
+
+        self.PREZZO_D = self.PREZZO_MEM / 100
+
+        # 2190
+        # PERFORM RIMETTI-DEP-TAB-UNICO-DDT THRU
+        # EX-RIMETTI-DEP-TAB-UNICO-DDT.
+
+        # 2222 PREZZO-TOT-D non considerata perch' solo display
+        # PREZZO-TOT-D = self.PREZZO_TOT / 100 
+
+        # 2334 inserimento in TABELLA_SINGOLI
+        ELEMENTO_SINGOLI = {               
+            "C-MAT" : self.C_MAT_A_BARRE,
+            "CONT" : None,
+            "D-MAT" : self.D_MAT_MEM,
+            "PREZZO" : self.PREZZO_MEM,
+            "PRIMA-TG" : self.PTG_MEM,
+            "SKU" : None
+        }
+
+        self.TABELLA_SINGOLI.append(ELEMENTO_SINGOLI)
+
+
+    def TRATTA_NO_GIAC(self,D_MAT,PREZZO_D): # 2273
+        print("%s %s" % (D_MAT,PREZZO_D))
+        print("CONFERMI MANCA GIAC ? (S/N)")
+        print("N")
+        RISP_NO_GIAC = "N"
+        return RISP_NO_GIAC
+
+
+    def INSERISCI_NO_GIAC_PREZZO(self,RISP_NO_GIAC): # 2243
+        IND_CAPI_NO_GIAC = {}
+        if RISP_NO_GIAC == "S":
+            print("INSERITO Manca GIAC.")
+            IND_CAPI_NO_GIAC["CAUSALE"] = "MancaGIAC"
+        if self.RISP_NO_PREZZO == "S" and  self.FLAG_DT_ESTERO == 1:
+            print("INS. Manca PREZZO x ESTERO")
+            IND_CAPI_NO_GIAC["CAUSALE-NO-PRZ"] = "MancaPRZ"
+        
+        IND_CAPI_NO_GIAC["C-MAT"] = self.C_MAT_A_BARRE
+        IND_CAPI_NO_GIAC["D-MAT"] = self.D_MAT_MEM
+        IND_CAPI_NO_GIAC["PREZZO"] = self.PREZZO_MEM
+
+        self.TABELLA_NO_GIAC.append(IND_CAPI_NO_GIAC)
+        
+    def CERCA_PREZZO(self):
+        # 3420
+        C_MAT = '%15d' % self.C_MAT_TRANS_RID
+        C_MAT = C_MAT[0:len(C_MAT)-3] + '000'
+        data = self.session.execute(db.sql_SELECT_PREZZO,{'C_MAT':C_MAT})
+        if not data: 
+            print("Inesist. col 0  %s" % C_MAT) 
+            return False
+        for rec_ in data:    # solo 1 rec e in formato dict
+            rec = rec_._mapping 
+            break    
+        self.PREZZO_ANAMAT = rec["COSTO"]
+
+        if self.MAG_INPUT in [1, 4, 6, 7, 852, 853]:
+            self.CHIAMA_DTVALSTK()
+        else:
+            self.CERCA_PREZZIA()
+
+        return True
+
+    def CHIAMA_DTVALSTK(self):
+        # 3442
+        # ===== DA FARE 
+        pass
+
+    def CERCA_PREZZIA(self):
+        # 3502
+        C_MAT = '%15d' % self.C_MAT_TRANS_RID
+        C_MAT = C_MAT[0:len(C_MAT)-3] + '000'
+        data = self.session.execute(db.sql_SELECT_PREZZIA,{'C_MAT':C_MAT})
+        if not data: 
+            print("Inesist. col 0  %s" % C_MAT) 
+            return False
+        for rec_ in data:    # solo 1 rec e in formato dict
+            rec = rec_._mapping 
+            break    
+        self.PREZZO_MEM = rec["PRZ_V_1"]
+        self.CAMBIO_MEM = 0
+        return True
+
+    def CERCA_PREZZO_V(self):
+        data = self.session.execute(db.sql_SELECT_PREZZO_V,{'C_MAT':self.C_MAT_A_BARRE})
+        if not data: 
+            print("Inesist. %s" % self.C_MAT_A_BARRE) 
+            return False
+        for rec_ in data:    # solo 1 rec e in formato dict
+            rec = rec_._mapping 
+            break    
+        self.PREZZO_MEM = rec["PRZ_V_1"]
+        return True
     
     def RIVALUTA_COSTO_ANAMAT(self):
         self.CERCA_B2C_NO_DT()
@@ -611,7 +933,9 @@ class Program():
     def RICERCA_COSTO_ANAMAT(self):
         ANACST_C_MAT = self.ANACST_C_MAT_COM
         data = self.session.execute(db.sql_SELECT_ANAMAT_CST,{'ANACST_C_MAT':ANACST_C_MAT})
-        #if not data: # IF B2C-NO-DT
+        if not data: # IF B2C-NO-DT
+            print("Inesist. %s" % self.C_MAT_A_BARRE) 
+            return
             
 
     def STAMPA_RAPPORTINO(self):

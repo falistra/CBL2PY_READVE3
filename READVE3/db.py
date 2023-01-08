@@ -1,4 +1,5 @@
 import db_access_core
+from config import MYSQL_HOST
 from config import MYSQL_USER
 from config import MYSQL_PASSWORD
 from config import MYSQL_SOCKET
@@ -55,10 +56,6 @@ sql_SELECT_ANAMAT = text("""
 select * from ANAMAT where C_MAT = :C_MAT;
 """)
 
-sql_SELECT_ANAMAT = text("""
-select * from DPARAM where C-AZIENDA = 0;
-""")
-
 sql_INSERT_MOV_SKU = text("""
                INSERT INTO MOV_SKU                                          
                VALUES(
@@ -75,3 +72,28 @@ sql_INSERT_MOV_SKU = text("""
                       :MOVSKU-SKU-FATTURAZIONE
                       )                                     
 """)
+
+sql_SELECT_DPARAM = text("""
+select NUMERO_3 from DPARAM where T_P = 13;
+""")
+
+sql_UPDATE_DPARAM = text("""
+UPDATE DPARAM 
+set NUMERO_3  = :NUM-BOLLA-TAGLIO-FODERE
+where T_P = 13;
+""")
+
+sql_SELECT_PREZZO_V = text("""
+select * from PREZZI where C_MAT = :C_MAT;
+""")
+
+sql_SELECT_PREZZO = text("""
+select * from ANAMAT where C_MAT = :C_MAT;
+""")
+
+sql_SELECT_PREZZIA = text("""
+select * from PREZZIA where C_MAT = :C_MAT;
+""")
+
+
+

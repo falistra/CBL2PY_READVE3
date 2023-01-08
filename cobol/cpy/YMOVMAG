@@ -1,0 +1,56 @@
+           .                                                            YMOVMAG 
+      *IF X7=OFF                                                        YMOVMAG 
+      *CONTROL NOLIST                                                   YMOVMAG 
+      *IF                                                               YMOVMAG 
+      *                                           ********************* YMOVMAG 
+      *            **********************************                   YMOVMAG 
+      *            * REC MOVIMENTI MAGAZZINO LL: 96 *                   YMOVMAG 
+      *            **********************************                   YMOVMAG 
+        14   D-MOVMAG.                                                  YMOVMAG 
+        15 RIF-INTERNO                    PIC S9(15) COMP-3.            YMOVMAG 
+        15 NUMERO-RIGA                   PIC S9(4) COMP.                YMOVMAG 
+        15  RIF-ORDINE                    PIC S9(15) COMP-3.            YMOVMAG 
+        15  RIF-BOLLA-FORN                PIC S9(15) COMP-3.            YMOVMAG 
+        15  CLI-FINALE  REDEFINES RIF-BOLLA-FORN                        YMOVMAG 
+                         PIC S9(15) COMP-3.                             YMOVMAG 
+        15  C-MAT                         PIC S9(15) COMP-3.            YMOVMAG 
+        15  CONTO                        PIC S9(8)  COMP.               YMOVMAG 
+        15  C-OPE                         PIC X(4).                     YMOVMAG 
+        15  PREZZO                          PIC S9(9) COMP.             YMOVMAG 
+        15  COSTO-STD                    PIC S9(9) COMP.                YMOVMAG 
+        15  SETTIMANA                    PIC S9(4) COMP.                YMOVMAG 
+        15  FILLER-MOVMAG                PIC S9(4) COMP.                YMOVMAG 
+        15  CATEG-GHELDA REDEFINES FILLER-MOVMAG PIC S9(4) COMP.        YMOVMAG 
+        15  MOD-IMPUTAZ                   PIC S9(15) COMP-3.            YMOVMAG 
+        15  DATA-AGG-TRASF-MOV REDEFINES                                YMOVMAG 
+                       MOD-IMPUTAZ       PIC S9(15) COMP-3.             YMOVMAG 
+        15  MAGAZZINO                        PIC S9(4) COMP.            YMOVMAG 
+        15  DIVISA                           PIC X(4).                  YMOVMAG 
+        15  UN-MIS-FATT                      PIC X(4).                  YMOVMAG 
+        15 QTA-TAGLIE.                                                  YMOVMAG 
+         20 QTA-TAGLIA               PIC S9(4) COMP COPY NTGOCCURS.     YMOVMAG 
+        15 QUANTITA                        PIC S9(11) COMP-3.           YMOVMAG 
+       15  VAL-REC                           PIC XX.                    YMOVMAG 
+      * Questi campi di MOVTRANS hanno un significato particolare               
+      * per comodita' di trattamento :   (scritto da ANASOCM)                   
+      *                                                                         
+      *       NUMERO-RIGA    1     se CARICO                                    
+      *                     -1     se STORNO                                    
+      *                                                                               
+      *       VAL-REC        BLANK se ORDINE NORMALE                            
+      *                      I     se ORDINE INSERITO                           
+      *                      R     se ORDINE RIASSORTIMENTO                     
+      *                      XX    se SPEDIZIONE di MAXIMA     
+      *RESSDT*                                                          
+      *                      FR    se reso Franchising (SSDT)
+      *                      MX    se reso Maxima      (SSDT)
+      *                                                                 
+      *RETOPO*
+      *                      MN    se reso ManNord 
+      *
+      *       MOD-IMPUTAZ    cod societa destinazione                           
+      *                                                                         
+      * Questi significati vengono persi nel MOVMAG                             
+      *                                                                 YMOVMAG 
+      *CONTROL LIST                                                     YMOVMAG 
+      *                                                                 YMOVMAG 

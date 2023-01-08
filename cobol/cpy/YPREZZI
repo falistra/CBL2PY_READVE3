@@ -1,0 +1,20 @@
+           .                                                            YPREZZI 
+      *IF X7=OFF                                                        YPREZZI 
+      *CONTROL NOLIST                                                   YPREZZI 
+      *IF                                                               YPREZZI 
+      *                                          *********************  YPREZZI 
+      *            *************************************                YPREZZI 
+      *            * REC-PREZZI           LL:38        *                YPREZZI 
+      *            *************************************                YPREZZI 
+      *                                                                 YPREZZI 
+           20 C-MAT                     PIC S9(15)    COMP-3.           YPREZZI 
+           20 MERCATO                   PIC S9(4)     COMP.             YPREZZI 
+           20 DIVISA                    PIC X(4).                       YPREZZI 
+           20 MAGAZZINO                 PIC S9(4) COMP.                 YPREZZI 
+           20 PREZZO-VENDITA-SUP.                                       YPREZZI 
+            25 PREZZO-VENDITA           PIC S9(9)     COMP OCCURS 4.    YPREZZI 
+           20 DATA-ULT-AGG              PIC S9(9) COMP.                 YPREZZI 
+           20 VALID-REC                 PIC X(2).                       YPREZZI 
+      *                                                                 YPREZZI 
+      *CONTROL LIST                                                     YPREZZI 
+      *                                                                 YPREZZI 

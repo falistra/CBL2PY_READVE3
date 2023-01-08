@@ -1,0 +1,92 @@
+      *                                           ********************  YANAMAT 
+      *            *********************************                    YANAMAT 
+      *            * REC-ANAMAT            LL:94   *                    YANAMAT 
+      *            *********************************                    YANAMAT 
+           .                                                            YANAMAT 
+      *IF X7=OFF                                                        YANAMAT 
+      *CONTROL NOLIST                                                   YANAMAT 
+      *IF                                                               YANAMAT 
+      *                                                                 YANAMAT 
+           20  C-MAT                   PIC S9(15)   COMP-3.             YANAMAT 
+           20  D-MAT                   PIC X(24).                       YANAMAT 
+           20  DT-NA                  PIC S9(8)     COMP.               YANAMAT 
+           20  DT-UV                  PIC S9(8)     COMP.               YANAMAT 
+           20  P-STOCK                 PIC X(2).                        YANAMAT 
+      ************** P-STOCK  contiene il campo COMPOS. CLASSE          YANAMAT 
+           20  CTO-RICAVI             PIC S9(8)     COMP.               YANAMAT 
+           20  CTO-COSTI              PIC S9(9)     COMP.               YANAMAT 
+      ************** CTO-COSTI contiene il COSTO - lo sconto            YANAMAT 
+           20  FLAGS-A.                                                 YANAMAT 
+            25 FLAG                    PIC X  OCCURS 8.                 YANAMAT 
+           20  FLAGS-RID REDEFINES FLAGS-A.                             YANAMAT 
+            25  FLAG1                  PIC X.                           YANAMAT 
+             88  GESTIONE-1-QTA        VALUE " ", "0".                  YANAMAT 
+             88  GESTIONE-PER-TAGLIE   VALUE "1".                       YANAMAT 
+            25  FLAG2                  PIC X.                           YANAMAT 
+             88  GESTIONE-A-PEZZE      VALUE "1".                       YANAMAT 
+             88  NO-GESTIONE-A-PEZZE   VALUE " ", "0".                  YANAMAT 
+            25  FLAG3                  PIC X.                           YANAMAT 
+             88  CAPO-APPESO           VALUE "1".                       YANAMAT 
+             88  CAPO-IN-SCATOLA       VALUE "0" , " ".                 YANAMAT 
+            25  FLAG4                  PIC X.                           YANAMAT 
+      ************** FLAG4 contiene il numero di pezzi                  YANAMAT 
+            25  FLAG5                  PIC X.                           YANAMAT 
+              88  CAPO-MODA VALUE "1".                                  YANAMAT 
+              88 NO-CAPO-MODA  VALUE "0" , " ".                         YANAMAT 
+              88 MAT-CONSUMO-MP VALUE "1".                              YANAMAT 
+              88 MAT-NO-CONSUMO-MP VALUE "0", " ".                      YANAMAT
+              88 CAPO-DIVISA VALUE "D".                                 YANAMAT
+              88 PROTOTIPO  VALUE "P".                                  YANAMAT
+              88 PROMOZIONALE  VALUE "Z".                               YANAMAT              
+            25  FLAG6                  PIC X.                           YANAMAT 
+              88 NORMALE VALUE "0", " ".                                YANAMAT 
+              88 COMPON-TAILLEUR VALUE "1".                             YANAMAT 
+              88 TAILLEUR VALUE "2".                                    YANAMAT 
+            25 FLAG7  PIC X.                                            YANAMAT 
+              88 CAPO-ACQUISTO VALUE "1".                               YANAMAT 
+              88 CAPO-PROD     VALUE "2".                               YANAMAT 
+              88 ACCESS-ACQ    VALUE "3".                               YANAMAT 
+              88 CAPO-PROD-DIFF-TESS VALUE "5".                         YANAMAT 
+              88 CAPO-PROD-TERZI VALUE "6".                             YANAMAT 
+              88 CAPO-X-MAXIMA VALUE "1", "2", "3", "4".                YANAMAT 
+              88 ACCESS-FACON  VALUE "4".                               YANAMAT 
+              88 CAPO-ESTERNI-DIFF-TESS VALUE "E".                      YANAMAT 
+              88 CAPO-SCONTO-STOCK VALUE "E","2","5","6","4".           YANAMAT
+            25 FLAG8  PIC X.                                            YANAMAT 
+              88 NO-CONFORM    VALUE "0" , " ".                         YANAMAT 
+              88 CONFORMATO    VALUE "1".                               YANAMAT 
+              88 MAXECO        VALUE "2".                               YANAMAT
+      **** aggiunto INTREND = 3 modelli con collezione = 4,5,6,8        YANAMAT
+      **** e societa = 5 ( non valido per riass. Maxima/MM/B2B          YANAMAT
+      **** collez 7,9 )
+              88 INTREND       VALUE "3".                               YANAMAT              
+              88 P-BLACK       VALUE "4".                               YANAMAT 
+              88 MARELLA       VALUE "5".                               YANAMAT 
+              88 SPORTMAX      VALUE "6".                               YANAMAT 
+              88 PERSONA       VALUE "7".                               YANAMAT 
+              88 WEEK-END      VALUE "8".                               YANAMAT 
+           20  PERC-MAGG              PIC S9(4) COMP.                   YANAMAT 
+      ************** PERC-MAGG contiene il campo DISEGNO                YANAMAT 
+           20  ALIQ-IVA               PIC S9(4)     COMP.               YANAMAT 
+           20  CL-GR                   PIC S9(4)    COMP.               YANAMAT 
+           20  COLLEZIONE              PIC S9(4)    COMP.               YANAMAT 
+           20  ANNO                    PIC S9(4)    COMP.               YANAMAT 
+           20  STAGIONE                PIC S9(4)    COMP.               YANAMAT 
+           20  COSTO                   PIC S9(9)    COMP.               YANAMAT 
+           20  UN-MIS                  PIC X(4).                        YANAMAT 
+           20  CAT-TAGLIO              PIC XX.                          YANAMAT 
+      ************** CAT-TAGLIO contiene il campo COLORE MAXIMA         YANAMAT 
+           20  MATER-MAX               PIC S9(4)    COMP.               YANAMAT 
+           20  CATEG-GHELDA REDEFINES MATER-MAX PIC S9(4) COMP.         YANAMAT 
+           20  TG-BASE                 PIC S9(4)    COMP.               YANAMAT 
+           20  PRIMA-TG                PIC S9(4)    COMP.               YANAMAT 
+           20  ULTIMA-TG               PIC S9(4)    COMP.               YANAMAT 
+           20  SCORTA-IND.                                              YANAMAT 
+            25  SCORTA                 PIC X.                           YANAMAT 
+            25  IND                    PIC X.                           YANAMAT 
+           20  TIPO-MAT                PIC XX.                          YANAMAT 
+           20  VALID-REC               PIC XX.                          YANAMAT 
+      *                                                                 YANAMAT 
+      *CONTROL LIST                                                     YANAMAT 
+      *                                                                 YANAMAT 
+      *                                                                 YANAMAT 
