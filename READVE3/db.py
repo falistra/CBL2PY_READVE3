@@ -49,7 +49,7 @@ select LIST,DVS from CONFATT where conto = :CONTO_IN_R;
 """)
 
 sql_SITPF3 = """
-select * from SITPF where MAG  = :MAG_INPUT
+select * from SITPF where MAG  = :MAG_INPUT limit 1;
 """
 
 sql_SELECT_ANAMAT = text("""

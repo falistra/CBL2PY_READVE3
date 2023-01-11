@@ -1,0 +1,8 @@
+      *     
+      *                tav. ANAMAT_CST  (ANACST.IF)                 
+       01 ANACST-C-MAT                    PIC S9(15) COMP-3.              
+       01 ANACST-CST-STD                  PIC S9(9) COMP.              
+       01 ANACST-CST-STD-2                PIC S9(9) COMP.
+       01 ANACST-TS-CST                   PIC S9(15) COMP-3.
+      *                    
+      

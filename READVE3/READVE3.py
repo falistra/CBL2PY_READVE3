@@ -10,6 +10,8 @@ import lib_dt
 import lib_anag_sku
 import lib_exception
 
+import get_prezzo_stock
+
 import RAPPRAI3
 import db
 import common_fun
@@ -42,16 +44,6 @@ class Program():
     def READVE3(self):
         logging.debug("====INIZIO READVE3====")
         self.NTGOCCURS = 10
-
-        self.TABELLA_NO_GIAC = [
-            {   "C_MAT" : None, 
-                "PREZZO" : None,
-                "D-MAT" : None,                                      
-                "CAUSALE" : None,                                     
-                "CAUSALE-NO-PRZ" : None                     
-            }
-        ]
-
 
         self.TABELLA_SINGOLI = [ # 1421
             {
@@ -126,7 +118,7 @@ class Program():
 
             self.INIZIA_TAB_ART() # 1162 OK
             self.INIZIA_TAB_SING() # 1163 OK
-            self.TRATTA_OLD_NEW() # 1164    
+            self.TRATTA_OLD_NEW() # 1164   
             self.TRATTA_LETTI() # 1165
 
     def VERIF_NEG(self): # 1504
@@ -166,6 +158,7 @@ class Program():
             # lettura REC-ANACON COPY YANACON
 
             self.D_CONTO = self.REC_ANACON["D-CONTO"]
+            self.D_CONTO_MEM = self.D_CONTO
             self.FLAG_ANACON = self.REC_ANACON["FLAG-ANA-8"]
             self.FLAG_DT_ESTERO = self.REC_ANACON["FLAG-ANA-9"]
 
@@ -350,7 +343,7 @@ class Program():
                 else:
                     break
             CL = CL.split(",")
-            CL = [_cl_.strip() for _cl_ in CL]
+            CL = [int(_cl_.strip()) for _cl_ in CL]
 
             while(True):
                 try:
@@ -359,7 +352,7 @@ class Program():
                 except KeyboardInterrupt:
                         sys.exit(1)
                 if MaxCapi == "":
-                    MaxCapi = None
+                    MaxCapi = sys.maxint
                 else:
                     try:
                         MaxCapi = int(MaxCapi)
@@ -372,7 +365,13 @@ class Program():
             
             for _as_ in AS:
                 for _cl_ in CL:
-                    self.TAB_UNICO_DDT[(_as_,_cl_)] = { # 838
+                    if _as_ == "TUTTI":
+                        self.__TUTTI_AS__ = True
+                        key = _cl_
+                    else:
+                        self.__TUTTI_AS__ = False
+                        key = (_as_,_cl_)
+                    self.TAB_UNICO_DDT[key] = { # 838
                         "MAX-CAPI" : MaxCapi,
                         "CAPI-LETTI" : 0, 
                         "magazzino" : self.MAG_INPUT,
@@ -380,9 +379,11 @@ class Program():
                         }
             print("-------------------------------")
             for k in self.TAB_UNICO_DDT:
-                max_capi = self.TAB_UNICO_DDT[k]["MAX-CAPI"] if self.TAB_UNICO_DDT[k]["MAX-CAPI"] else "Tutti"
-                print("AS = {} CL = {} MAX-CAPI = {}".format(k[0],k[1],max_capi))            
-
+                max_capi = self.TAB_UNICO_DDT[k]["MAX-CAPI"] if self.TAB_UNICO_DDT[k]["MAX-CAPI"] < sys.maxint else "Tutti"
+                if self.__TUTTI_AS__:
+                    print("AS = {} CL = {} MAX-CAPI = {}".format("TUTTI",k,max_capi))            
+                else:
+                    print("AS = {} CL = {} MAX-CAPI = {}".format(k[0],k[1],max_capi))            
             print("CORRETTI? 'SI' per proseguire 'NO' per rifare elenco AS CL da capo")
             while(True):
                 try:
@@ -417,8 +418,6 @@ class Program():
             # i python che vengono chiamati dai cobol sono tutti nel repo intranet3/bin/4cobol/
             # disimpegna_capi.py del quale viene chiamata la functiona elimina_impegnati() 
 
-            return
-
             call_rest_api = ws_rest.Call_Rest_Api_DT(self.session, logging.getLogger(), 'put', 
                                         'magazzino_pf/gestione_impegni/DisimpegnaListaModelli',
                                         json_object, None)
@@ -433,17 +432,18 @@ class Program():
 
     def INIZIA_TAB_ART(self): # 1402
         self.TABELLA_ARTICOLI_LETTI = {
-            "TAB-ART" : { # S9(15)
-                "D-MAT" : None, # X(7)
-                "PRIMA-TG" : None, # S9(4)
-                "PREZZO" : None, # S9(9)
-                "CAMBIO" : None, # S9(9)
-                "QTA-GIAC" : [None]*self.NTGOCCURS, # S9(8)
-                "QTA-TAGLIE" : [None]*self.NTGOCCURS, # S9(4)
-                "COSTO" : None #S9(9)
-            }
+            # "TAB-ART" : { # S9(15)
+            #     "D-MAT" : None, # X(7)
+            #     "PRIMA-TG" : None, # S9(4)
+            #     "PREZZO" : None, # S9(9)
+            #     "CAMBIO" : None, # S9(9)
+            #     "QTA-GIAC" : [None]*self.NTGOCCURS, # S9(8)
+            #     "QTA-TAGLIE" : [None]*self.NTGOCCURS, # S9(4)
+            #     "COSTO" : None #S9(9)
+            # }
         }
-        # 524
+
+# 524
 # 043200 01 TABELLA-ARTICOLI-LETTI.                                               
 # 043300  03 ART-TAB-LETTI   OCCURS 5000.                                          
 # 043400   05 TAB-ART        PIC S9(15) COMP-3.                                   
@@ -460,7 +460,17 @@ class Program():
 #       *VACO*                                                            
 #          05 COSTO-TAB       PIC S9(9) COMP.
 
-    def INIZIA_TAB_SING(self):
+        self.TABELLA_NO_GIAC = [ # 561 
+            {   "C_MAT" : None, 
+                "PREZZO" : None,
+                "D-MAT" : None,                                      
+                "CAUSALE" : None,                                     
+                "CAUSALE-NO-PRZ" : None                     
+            }
+        ]
+
+
+    def INIZIA_TAB_SING(self): # 1421
 # 039600  05 C-MAT-SING        PIC S9(15) COMP-3.
 # 039500  05 CONT-SING         PIC S9(4) COMP.  
 # 039700  05 D-MAT-SING        PIC X(7).                                          
@@ -485,50 +495,152 @@ class Program():
         print(" S stampa rapportino")
         self.COD_IN = input().lower()
         if (self.COD_IN == 's'):
-            rc = self.STAMPA_RAPPORTINO()
+            rc = self.STAMPA_RAPPORTINO() # 1598
             print("   rapportino stampato")       
 
-    def TRATTA_SITPF_3(self):
-        data = self.conn.execute(db.sql_SITPF3,{"MAG_INPUT":self.MAG_INPUT})
-        for rec in data:
-            rec_SITPF3 = rec._mapping
-            self.C_MAT_TRANS_RID = rec["C_MAT"]
+    def TRATTA_SITPF_3(self): # 1713
+        
+        data = self.conn.execute("select * from SITPF where MAG  = {} limit 1;".format(self.MAG_INPUT))
+        self.IND_CAPI_LETTI = 0
+        for rec_SITPF3 in data:
+            # SELEZIONA-SITPF-3 1721 - 1781
+            print(rec_SITPF3)
+
+            # 15 C-MAT               PIC S9(15) COMP-3.                   YSITPF  
+            # 15 MAGAZZINO           PIC S9(4)  COMP.                     YSITPF  
+            # 15 QTA-GIAC.                                                YSITPF  
+            #  20  QTA-GIAC-PF        PIC S9(8) COMP COPY NTGOCCURS.      YSITPF  
+            # 15 VAL-GIAC            PIC S9(11) COMP-3.                   YSITPF  
+            # 15 QTA-INV.                                                 YSITPF  
+            #  20 QTA-INV-PF       PIC S9(8) COMP COPY NTGOCCURS.         YSITPF  
+            # 15 VAL-INV             PIC S9(11) COMP-3.                   YSITPF  
+            # 15 DT-UM               PIC S9(8)  COMP.                     YSITPF  
+            # 15 DT-INV              PIC S9(8)  COMP.                     YSITPF  
+            # 15 QTA-ORDINATA.                                            YSITPF  
+            #  20 QTA-ORD           PIC S9(8) COMP COPY NTGOCCURS.        YSITPF  
+            # 15 QTA-ORDINATA-C.                                          YSITPF  
+            #  20  QTA-ORD-C        PIC S9(8) COMP COPY NTGOCCURS.        YSITPF  
+            # 15 QTA-IMPEGNATA.                                           YSITPF  
+            #  20  QTA-IMP          PIC S9(8) COMP COPY NTGOCCURS.        YSITPF  
+            # 15 QTA-IMPEGNATA-C.                                         YSITPF  
+            #  20  QTA-IMP-C        PIC S9(8) COMP COPY NTGOCCURS.        YSITPF  
+            # 15 VAL-REC             PIC XX.                              YSITPF  
+            #  88 BOX-SOSPESO   VALUE "S ".  
+
+
+
+
+    #        15 C-MAT-TRANSITO.                                           DANCODMT
+    #          20  MODELLO                  PIC 9(7).  0-6                   DANCODMT
+    #          20 MOD-RID  REDEFINES MODELLO.                             DANCODMT
+    #           25  COLLEZIONE              PIC 9.    0                    DANCODMT
+    #           25  CLASSE                  PIC 99.   1-2                    DANCODMT
+    #           25  STAGIONE                PIC 9.    3                    DANCODMT
+    #           25  PROGR-MOD               PIC 99.   4-5                    DANCODMT
+    #           25  ANNO                    PIC 9.    6                    DANCODMT
+    #          20  ARTICOLO                 PIC 9(5). 7-11                    DANCODMT
+    #          20 ART-RID  REDEFINES ARTICOLO.                            DANCODMT
+    #           25 GR-MERC                  PIC 99. 7-8                       DANCODMT
+    #           25 FILLER REDEFINES GR-MERC.                              DANCODMT
+    #             30 VEST-A                 PIC 9.  7                      DANCODMT
+    #             30 PEZZO-A                PIC 9.  8                      DANCODMT
+    #           25 PROGR-ART                PIC 999. 9-11                      DANCODMT
+    #           25 FILLER REDEFINES PROGR-ART.                            DANCODMT
+    #            30 FILLER                  PIC 9.  9                      DANCODMT
+    #            30 PREFISSO-V-F            PIC 9.  10                      DANCODMT
+    #            30 SOCIETA-MOD             PIC 9.  11                      DANCODMT
+    #          20  COLORE                   PIC 999. 12-15                      DANCODMT
+    #   *                                                                 DANCODMT
+    #        15 C-MAT-TRANS-RID REDEFINES C-MAT-TRANSITO PIC 9(15).       DANCODMT
+
+            # CALCOLA-AS-CL 1753
+            self.C_MAT_TRANS_RID = int(rec_SITPF3["C_MAT"])
+            #print(rec_SITPF3["C_MAT"])
+            #print(self.C_MAT_TRANS_RID)
+            C_MAT = str(rec_SITPF3["C_MAT"])
+            self.C_MAT = OrderedDict([
+                ("MODELLO", int(C_MAT[0:6])),
+                ("COLLEZIONE", int(C_MAT[0:1])),
+                ("CLASSE"    , int(C_MAT[1:3])),
+                ("STAGIONE"  , int(C_MAT[3:4])),
+                ("PROGR-MOD" , int(C_MAT[4:6])),
+                ("ANNO"      , int(C_MAT[6:7])),
+                ("VEST-A"    , int(C_MAT[7:8])),
+                ("PEZZO-A"   , int(C_MAT[8:9])),
+                ("PROGR-ART"   , int(C_MAT[10:12])),
+                ("PREFISSO-V-F"   , int(C_MAT[10:11])),
+                ("SOCIETA-MOD"   , int(C_MAT[11:12])),
+                ("COLORE"   , int(C_MAT[12:15]))
+            ])
+            # print(self.C_MAT)
+
             rec_anamat_ = self.session.execute(db.sql_SELECT_ANAMAT,{'C_MAT':self.C_MAT_TRANS_RID})
             for rec_anamat in rec_anamat_:    # solo 1 rec e in formato dict
-                rec_anamat = rec_anamat._mapping 
                 break
-            _as_ = "%s%s" % rec_anamat["ANNO"],rec_anamat["STAG"]
+            _as_ = "{}{}".format(rec_anamat["ANNO"],rec_anamat["STAG"])
             _cl_ = rec_anamat["CL_GR"]
+
             try:
-                capi =  self.TAB_UNICO_DDT[_as_][_cl_] 
+                if self.__TUTTI_AS__:   key = _cl_
+                else:   key = (_as_,_cl_)
+                self.DEP_TAB_UNICO_DDT =  self.TAB_UNICO_DDT[key] 
+                print(key,self.DEP_TAB_UNICO_DDT)
             except: # on trovato
                 continue
-            if (capi["MAX_CAPI"] == capi["CAPI-LETTI"]):
+            if (self.DEP_TAB_UNICO_DDT["MAX-CAPI"] == self.DEP_TAB_UNICO_DDT["CAPI-LETTI"]):
+
+                # check se raggiunto il massimo su TUTTI TAB_UNICO_DDT
                 raggiunto_max_tutti_AS_CL = True
-                for _as_ in self.TAB_UNICO_DDT:
-                    for _cl_ in self.TAB_UNICO_DDT[_as_]:
-                        raggiunto_max_tutti_AS_CL = self.TAB_UNICO_DDT[_as_][_cl_]["MAX_CAPI"] == self.TAB_UNICO_DDT[_as_][_cl_]["CAPI-LETTI"]
-                        if not raggiunto_max_tutti_AS_CL:    break
+
+                for key in self.TAB_UNICO_DDT:
+                    raggiunto_max_tutti_AS_CL = self.TAB_UNICO_DDT[key]["MAX-CAPI"] == self.TAB_UNICO_DDT[key]["CAPI-LETTI"]
                     if not raggiunto_max_tutti_AS_CL:    break
+
                 if raggiunto_max_tutti_AS_CL:
                     break # esco da for su SITPF3
                 else:
                     continue # raggiunto SOLO MAX per specifico AS CL :continuo for su SITPF3
+                
 
-            if not (self.SOCIETA_INPUT_R == None): # None = TUTTI
-                if not (self.SOCIETA_INPUT_R == str(rec["C_MAT"][11])): # SOCIETA-MOD 
+            if not (self.SOCIETA_INPUT_R == None)\
+                 and not (self.SOCIETA_INPUT_R == int(self.C_MAT["SOCIETA-MOD"]) ): # SOCIETA-MOD 
+                    print("{} {} non uguale societa'".format(self.SOCIETA_INPUT ,self.C_MAT["SOCIETA-MOD"]))
                     continue
 
-            for IT in range(1,11):
+            # 1853
+            for IT in range(1,self.NTGOCCURS+1):
                 if self.DISIMPEGNA == "SI":
-                    self.DA_TRASFERIRE = rec["GQF%d" % IT]
+                    self.DA_TRASFERIRE = rec_SITPF3["GQF%d" % IT]
                 else:
-                    self.DA_TRASFERIRE = rec["GQF%d" % IT] + rec["QICF%d" % IT]
+                    self.DA_TRASFERIRE = rec_SITPF3["GQF%d" % IT] + rec_SITPF3["QIF%d" % IT]
 
                 for IC in range(1,self.DA_TRASFERIRE+1):
-                    self.TRATTA_LEGGI(rec_SITPF3,IT)
+                    self.C_MAT_TRANS_RID = int(rec_SITPF3["C_MAT"])
+                    
+                    #    15 C-MAT-A-BARRE.                                            DANCODBC
+                    #     20 MODELLO               PIC 9(7).                          DANCODBC
+                    #     20 MOD-RID REDEFINES MODELLO.                               DANCODBC
+                    #      25 MARCHIO              PIC 9.                             DANCODBC
+                    #      25 CLASSE               PIC 99.                            DANCODBC
+                    #      25 STAGIONE             PIC 9.                             DANCODBC
+                    #      25 PROGR-ART            PIC 99.                            DANCODBC
+                    #      25 ANNO                 PIC 9.                             DANCODBC
+                    #     20 VESTIBILITA           PIC 9.                             DANCODBC
+                    #     20 SOCIETA               PIC 99.                            DANCODBC
+                    #     20 FILLER REDEFINES SOCIETA.                                DANCODBC
+                    #      25 PREFBC-V-F           PIC 9.                             DANCODBC
+                    #      25 SOC-BC-MOD           PIC 9.                             DANCODBC
+                    #     20 PEZZO                 PIC 9.                             DANCODBC
+                    #     20 VARIANTE-COL          PIC 99.                            DANCODBC
+                    #     20 TAGLIA                PIC 9.                             DANCODBC
+                    #    15 C-MAT-A-BARRE-RID REDEFINES C-MAT-A-BARRE  PIC 9(14).     DANCODBC
 
-    def TRATTA_LETTI(self):	# Linea Source Cobol: 4328
+                    self.NTG_MEM = IT
+                    self.C_MAT_A_BARRE = lib_dt.conv_trans_barc(rec_SITPF3["C_MAT"], self.NTG_MEM)
+
+                    self.TRATTA_LEGGI(rec_SITPF3)
+
+    def TRATTA_LETTI(self):	# 2413
         while (True):
             self.TOT_CAPI_LETTI_1 = self.IND_CAPI_LETTI
             print("- Tot CAPI - ",self.TOT_CAPI_LETTI_1)
@@ -737,80 +849,92 @@ class Program():
         print("ancora %s in %s"  % (self.TABELLA_ARTICOLI_LETTI[ELEM_ART]["QTA_TAGLIA"][TAGLIA], self.COD_IN[8]))
 
     def TRATTA_LEGGI(self,rec_SITPF3,NTG_MEM):
+        # 1945
         self.C_MAT_A_BARRE = lib_dt.conv_trans_barc(rec_SITPF3["C_MAT"], NTG_MEM)
-        KEY_ELEM_ART = self.COD_IN[:len(self.COD_IN)-1]
-        ELEM_ART = self.TABELLA_ARTICOLI_LETTI[KEY_ELEM_ART]
-        data = self.session.execute(db.sql_SELECT_ANAMAT,{'C_MAT':self.C_MAT_A_BARRE})
-        if not data: # IF B2C-NO-DT
-            print("Inesist. %s" % self.C_MAT_A_BARRE) 
-            return
-        for rec_ in data:    # solo 1 rec e in formato dict
-            rec = rec_._mapping 
-            break    
+        KEY_ELEM_ART = self.C_MAT_A_BARRE[:len(self.C_MAT_A_BARRE)-1]
+        
+        # Check esistenza in self.TABELLA_ARTICOLI_LETTI
+        QT_STATO_TROVATO = KEY_ELEM_ART in self.TABELLA_ARTICOLI_LETTI
+        
+        if not QT_STATO_TROVATO: # Non presente in self.TABELLA_ARTICOLI_LETTI
+            data = self.session.execute(db.sql_SELECT_ANAMAT,{'C_MAT':self.C_MAT_A_BARRE})
+            if not data: # IF B2C-NO-DT
+                print("Inesist. %s" % self.C_MAT_A_BARRE) 
+                return
+            for rec_ in data:    # solo 1 rec e in formato dict
+                rec_ANAMAT = rec_._mapping 
+                break    
 
-        if not ELEM_ART["QT-STATO"] == "0":
-            self.D_MAT_MEM  = rec["D_MAT"]
-            self.PTG_MEM = rec["P_TG"]
+        if not QT_STATO_TROVATO:  # Non presente in self.TABELLA_ARTICOLI_LETTI
+            self.D_MAT_MEM  = rec_ANAMAT["D_MAT"]
+            self.PTG_MEM = rec_ANAMAT["P_TG"]
 
-            self.VAL_REC_MEM  = rec["VAL_REC"]
-            self.COSTO_MEM = rec["CST_STD"]
+            self.VAL_REC_MEM  = rec_ANAMAT["VAL_REC"]
+            self.COSTO_MEM = rec_ANAMAT["CST_STD"]
 
-            self.ANACST_C_MAT_COM = rec["C_MAT"]
+            self.ANACST_C_MAT_COM = rec_ANAMAT["C_MAT"]
             self.ANACST_MAG_COM = self.MAG_INPUT
 
-            self.RIVALUTA_COSTO_ANAMAT()
-            # ===== DA FARE 
+            self.RIVALUTA_COSTO_ANAMAT() # 2020
+            if not self.ANACST_CST_COM == 0:
+                self.COSTO_MEM = self.ANACST_CST_COM
 
         RISP_NO_GIAC =  RISP_NO_PREZZO = ""
         self.PREZZO_MEM = 0
-        if not ELEM_ART["QT-STATO"] == "0" and self.REC_INDIRIZZI["QT_STATO"] == 4:
+        if not QT_STATO_TROVATO and self.REC_INDIRIZZI["QT_STATO"] == 4:
             rc = self.CERCA_PREZZO_V()
             if not rc: 
                return 
-        if not ELEM_ART["QT-STATO"] == "0":
+        if not QT_STATO_TROVATO:
             self.PREZZO_MEM = self.PREZZO_ANAMAT = 0
             self.CAMBIO_MEM = 0
-            rc = self.CERCA_PREZZO()
+            rc = self.CERCA_PREZZO() # 2072
             if not rc: 
                return 
-        if self.PREZZO_MEM == 0 or \
-            (self.PREZZO_MEM == self.PREZZO_ANAMAT and not self.FLAG_DT_ESTERO == 1):
-            self.PREZZO_OK = 0
-            # self.TRATTA_NO_PREZZO() # 2084
-            self.PREZZO_MEM = 0
+            if self.PREZZO_MEM == 0 or \
+                (self.PREZZO_MEM == self.PREZZO_ANAMAT and not self.FLAG_DT_ESTERO == 1):
+                self.PREZZO_OK = 0
+                # self.TRATTA_NO_PREZZO() # 2084 2299
+                RISP_NO_PREZZO = "S"
+                self.PREZZO_OK = 1
+                if not RISP_NO_PREZZO == "S": # 2086
+                    return
+                # 2090
+                if not self.PREZZO_MEM == 0:
+                    self.PREZZO_MEM = 0
         else:
-            self.CAMBIO_MEM = ELEM_ART["CAMBIO_TAB"]
-            self.D_MAT_MEM = ELEM_ART["D_MAT"]
+            ELEM_ART = self.TABELLA_ARTICOLI_LETTI[KEY_ELEM_ART]
+            self.CAMBIO_MEM = ELEM_ART["CAMBIO"]
+            self.D_MAT_MEM = ELEM_ART["D-MAT"]
             self.PREZZO_MEM = ELEM_ART["PREZZO"]
 
-        self.RISP_NO_PREZZO = "S" # ??
+        
+        if not QT_STATO_TROVATO:
+            QTA_GIAC = []
+            for IT in range(1,self.NTGOCCURS+1):
+                QTA_GIAC.append(rec_SITPF3["GQF%d" % IT])    
 
-        if not ELEM_ART["QT-STATO"] == "0":
-            pass
-# 12700       COMPUTE ELEM-ART = C-MAT-A-BARRE-RID / 10                          
-# 112800       MOVE D-MAT-MEM TO D-MAT-ELEM                                       
-# 112900*BUDA*                                                                    
-# 113000       MOVE PTG-MEM TO PRIMA-TG-ELEM                                      
-# 113100       MOVE PREZZO-MEM TO PREZZO-ELEM    
-#       *VACO*                                                            inizio
-#              MOVE COSTO-MEM TO COSTO-ELEM
-#       *VACO*                                                            fine
-# 113200*PRODI*                                                                   
-# 113300*      MOVE STK-CAMBIO TO CAMBIO-ELEM                                     
-# 113400       MOVE CAMBIO-MEM TO CAMBIO-ELEM                                     
-# 113500       MOVE VAL-REC-MEM TO TIPO-ANA-ELEM                                  
-# 113600       MOVE LOW-VALUE TO QTA-TAGLIE-ELEM                                  
-# 113700       MOVE QTA-GIAC OF REC-SITPF TO QTA-GIAC-ELEM                        
-# 113800     ELSE                                                                 
-# 113900       MOVE ART-TAB-LETTI(QT-INDEX-ELEM OF PARTAB-ART)                    
-# 114000                   TO ART-ELEM-LETTI                                      
-# 114100       MOVE D-MAT-ELEM TO D-MAT-MEM                                       
-# 114200       MOVE PRIMA-TG-ELEM TO PTG-MEM.                
+            ELEM_ART = {
+                "D-MAT" : self.D_MAT_MEM, # X(7)
+                "PRIMA-TG" : self.PTG_MEM, # S9(4)
+                "PREZZO" : self.PREZZO_MEM, # S9(9)
+                "CAMBIO" : self.CAMBIO_MEM, # S9(9),
+                "TIPO-ANA" : self.VAL_REC_MEM,
+                "QTA-GIAC" : QTA_GIAC, # S9(8)
+                "QTA-TAGLIE" : [None]*self.NTGOCCURS, # S9(4)
+                "COSTO" : self.COSTO_MEM #S9(9)
+            } 
+        else:
+            ELEM_ART = self.TABELLA_ARTICOLI_LETTI[KEY_ELEM_ART]
+            self.D_MAT_MEM = ELEM_ART["D-MAT"]
+            self.PTG_MEM = ELEM_ART["PRIMA-TG"]
+
         PREZZO_D = self.PREZZO_MEM / 100
-        #2136
-        if rec_SITPF3["QTA_TAGLIA"][NTG_MEM]  <  ELEM_ART["QTA_TAGLIA"][NTG_MEM] :
+        ELEM_ART["QTA-TAGLIE"][self.NTG_MEM] += 1 
+        if rec_SITPF3["GQF%d" % IT]  <  ELEM_ART["QTA_TAGLIE"][NTG_MEM] :
             print("Manca giac %s" %  self.C_MAT_A_BARRE)
-            RISP_NO_GIAC = self.TRATTA_NO_GIAC(ELEM_ART["D_MAT"],PREZZO_D) # 2142
+
+            RISP_NO_GIAC = self.TRATTA_NO_GIAC(ELEM_ART["D-MAT"],PREZZO_D) # 2142
             if not RISP_NO_GIAC == "S":
                 return
             
@@ -818,32 +942,26 @@ class Program():
                 self.INSERISCI_NO_GIAC_PREZZO(RISP_NO_GIAC) # 2154
                 return
 
+        self.IND_CAPI_LETTI += 1
         self.PREZZO_TOT +=  self.PREZZO_MEM
-
-        # 2161
-        # MOVE IND-CAPI-LETTI TO CONT-D.                                       
-        # DISPLAY CONT-D.
-
         self.PREZZO_D = self.PREZZO_MEM / 100
 
-        # 2190
-        # PERFORM RIMETTI-DEP-TAB-UNICO-DDT THRU
-        # EX-RIMETTI-DEP-TAB-UNICO-DDT.
-
-        # 2222 PREZZO-TOT-D non considerata perch' solo display
-        # PREZZO-TOT-D = self.PREZZO_TOT / 100 
-
+        self.DEP_TAB_UNICO_DDT["CAPI-LETTI"] += 1 # 2165
+        # 2190 RIMETTI-DEP-TAB-UNICO-DDT
+        
         # 2334 inserimento in TABELLA_SINGOLI
         ELEMENTO_SINGOLI = {               
             "C-MAT" : self.C_MAT_A_BARRE,
-            "CONT" : None,
+            "CONT" : self.CONTO_IN,
             "D-MAT" : self.D_MAT_MEM,
             "PREZZO" : self.PREZZO_MEM,
             "PRIMA-TG" : self.PTG_MEM,
             "SKU" : None
         }
-
         self.TABELLA_SINGOLI.append(ELEMENTO_SINGOLI)
+    
+        if not QT_STATO_TROVATO:
+            self.TABELLA_ARTICOLI_LETTI[KEY_ELEM_ART] = ELEM_ART
 
 
     def TRATTA_NO_GIAC(self,D_MAT,PREZZO_D): # 2273
@@ -890,9 +1008,32 @@ class Program():
         return True
 
     def CHIAMA_DTVALSTK(self):
-        # 3442
-        # ===== DA FARE 
-        pass
+        # 3442        
+        if self.MAG_INPUT_R in [1,6]:
+            self.MAG_FALLATO = True
+        else:
+            self.MAG_FALLATO = False
+        if self.MAG_FALLATO:
+            VC_NOME = "STF"
+        else:
+            if self.F_V_INPUT == "F":
+                VC_NOME = "STF"
+            else:
+                VC_NOME = "STV"
+
+        # DTVALSTK 219
+        # MOVE VC-NOME(3:1)  TO INPUT-VAL-TIPO-PREZZO.
+        INPUT_VAL_TIPO_PREZZO = VC_NOME[2:3]
+        #    STRING '100',
+        #          VC-NOME(4:5)  INTO INPUT-VAL-CONTO.
+        # 3461
+        # MOVE CONTO-IN-R TO NOME-IN-5.
+        #  
+        INPUT_VAL_CONTO = '100' + self.CONTO_IN[3:]
+        cobol_input = "%15s%8s%1s" % (self.C_MAT,INPUT_VAL_CONTO,INPUT_VAL_TIPO_PREZZO)
+        out = get_prezzo_stock.prezzo_stock({'cobol_input':cobol_input})["cobol_output"]
+        self.PREZZO_MEM = int(out[2:11])
+        self.CAMBIO_MEM = int(out[11:20])
 
     def CERCA_PREZZIA(self):
         # 3502
@@ -924,22 +1065,28 @@ class Program():
         self.CERCA_B2C_NO_DT()
         self.RICERCA_COSTO_ANAMAT()
 
-    def CERCA_B2C_NO_DT(self):
+    def CERCA_B2C_NO_DT(self): # 4309
         if self.ANACST_MAG_COM  in self.TAB_B2C_NO_DT:
-            self.FLAG_B2C_NO_DT = 'S'
+            self.FLAG_B2C_NO_DT = True
         else:
-            self.FLAG_B2C_NO_DT = 'N'
+            self.FLAG_B2C_NO_DT = False
 
-    def RICERCA_COSTO_ANAMAT(self):
+    def RICERCA_COSTO_ANAMAT(self): # 4320
         ANACST_C_MAT = self.ANACST_C_MAT_COM
         data = self.session.execute(db.sql_SELECT_ANAMAT_CST,{'ANACST_C_MAT':ANACST_C_MAT})
         if not data: # IF B2C-NO-DT
             print("Inesist. %s" % self.C_MAT_A_BARRE) 
             return
-            
+        for rec_ in data:    # solo 1 rec e in formato dict
+            rec = rec_._mapping 
+            break    
+        if self.FLAG_B2C_NO_DT:
+            self.ANACST_CST_COM = rec["CST_STD_2"]
+        else:
+            self.ANACST_CST_COM = rec["CST_STD"]
 
     def STAMPA_RAPPORTINO(self):
-        RAPPRAI3.RAPPRAI3(self.ART_TAB_LETTI,self.TABELLA_NO_GIAC)
+        RAPPRAI3.RAPPRAI3(self.TABELLA_ARTICOLI_LETTI,self.TABELLA_NO_GIAC)
           # 3883
 #         246100     CALL "RAPPRAI3" USING W-COMMON SQLCA                                 
 # 246200                           TABELLA-ARTICOLI-LETTI PARTAB-ART              
