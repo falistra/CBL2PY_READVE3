@@ -87,9 +87,7 @@ sql_SELECT_PREZZO_V = text("""
 select * from PREZZI where C_MAT = :C_MAT;
 """)
 
-sql_SELECT_PREZZO = text("""
-select * from ANAMAT where C_MAT = :C_MAT;
-""")
+
 
 sql_SELECT_PREZZIA = text("""
 select * from PREZZIA where C_MAT = :C_MAT;

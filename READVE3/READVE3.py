@@ -35,7 +35,7 @@ class Program():
             logging.getLogger().setLevel(logging.ERROR)
 
         self.DESTINO_VALIDO = [73, 90, 94, 27, 28, 29, 34, 22]
-        self.TABELLA_NO_GIAC = []
+        self.TABELLA_NO_GIAC = {}
 
         self.session = db_access_core.mysql_connect('reretis', echo=False)
         engine = db.mysql_engine('reretis', echo=False)
@@ -101,6 +101,7 @@ class Program():
                 break
 
     def TRATTA_NEG(self): # 1106
+        logging.debug("TRATTA_NEG")
         while  (self.VERIF_NEG()): # 1110
 
             self.PREZZO_TOT = 0
@@ -122,6 +123,7 @@ class Program():
             self.TRATTA_LETTI() # 1165
 
     def VERIF_NEG(self): # 1504
+        logging.debug("VERIF_NEG")
         while(True):
             print("CONTO cliente (8 cifre)")
             print("  (END/end=fine)")
@@ -146,8 +148,6 @@ class Program():
             for rec in data:    # solo 1 rec e in formato dict
                 rec = rec._mapping 
                 break
-            logging.debug(rec)
-            # logging.debug(str(row2dict(rec)))
             
             self.REC_ANACON = {
                 "CONTO" : rec['CONTO'], 
@@ -188,6 +188,7 @@ class Program():
 
 
     def LEGGI_IND(self):
+        logging.debug("LEGGI_IND")
         data = self.session.execute(db.sql_SELECT_INDIRIZ,{"CONTO_IN_R":self.CONTO_IN_R})
         
         # lettura REC-ANACON COPY YANACON
@@ -195,35 +196,23 @@ class Program():
             print("Manca INDIRIZZO ")
             return False
         for rec in data:    # solo 1 rec e in formato dict
-            rec = rec._mapping 
-        logging.debug(rec)
-
-        # REC-INDIRIZZI  COPY YINDIRIZ
-        self.REC_INDIRIZZI = rec 
-        # { # 1607
-        #         "D-AGG" : " "*24,
-        #         "STATO" : " "*4,
-        #         "SIGLA-PROV" : [" "*2," "*2],
-        #         "INDIRIZZO" : [" "*66," "*66],
-        #         "CAP" : [0,0],
-        #         "PRIORITA" : 0,
-        #         "TELEFONO" : 0,
-        #         "TELEX" : 0
-        # }
+            self.REC_INDIRIZZI = rec 
+            # REC-INDIRIZZI  COPY YINDIRIZ
+            break
         return rec
 
     def MUOVI_IND(self,rec):
         self.CAMPI_ANAGRAFICI["INDIRIZZO-STD"] = rec["INDZ_1"]
         try:
-            logging.debug("{}".format(rec["INDZ_1"]))
+            #logging.debug("{}".format(rec["INDZ_1"]))
             (INDIRIZZO,LOCALITA) = rec["INDZ_1"].split(";")
-            logging.debug("{} {}".format(INDIRIZZO,LOCALITA))
+            #logging.debug("{} {}".format(INDIRIZZO,LOCALITA))
             self.CAMPI_ANAGRAFICI["INDIRIZZO-COM"] = INDIRIZZO
             self.CAMPI_ANAGRAFICI["LOCALITA-COM"] = LOCALITA
             if rec["INDZ_2"]:
-                logging.debug("{}".format(rec["INDZ_2"]))
+                #logging.debug("{}".format(rec["INDZ_2"]))
                 (INDIRIZZO1,LOCALITA1) = rec["INDZ_2"].split(";")
-                logging.debug("{} {}".format(INDIRIZZO1,LOCALITA1))
+                #logging.debug("{} {}".format(INDIRIZZO1,LOCALITA1))
                 self.CAMPI_ANAGRAFICI["INDIRIZZO-C-COM"] = INDIRIZZO1
                 self.CAMPI_ANAGRAFICI["LOCALITA-C-COM"] = LOCALITA1
             else:
@@ -248,6 +237,7 @@ class Program():
         self.CAMPI_ANAGRAFICI["CONTO-FATTURA-MEM"] = rec["TL"] if not rec["TL"] == 0 else rec["TX"]
 
     def CERCA_LISTINO(self):
+        logging.debug("CERCA_LISTINO")
         data = self.session.execute(db.sql_SELECT_LISTINO,{"CONTO_IN_R":self.CONTO_IN_R})
         
         # lettura REC-ANACON COPY YANACON
@@ -403,8 +393,6 @@ class Program():
         return True
 
     def CICLO_DISIMPEGNO(self): # 4461
-        # session = db_access_core.mysql_connect('reretis', echo=False)
-
         for _as__cl_ in self.TAB_UNICO_DDT:
             json_object = {
                 'anni_stagioni': _as__cl_[0],
@@ -460,15 +448,14 @@ class Program():
 #       *VACO*                                                            
 #          05 COSTO-TAB       PIC S9(9) COMP.
 
-        self.TABELLA_NO_GIAC = [ # 561 
-            {   "C_MAT" : None, 
-                "PREZZO" : None,
-                "D-MAT" : None,                                      
-                "CAUSALE" : None,                                     
-                "CAUSALE-NO-PRZ" : None                     
-            }
-        ]
-
+        self.TABELLA_NO_GIAC = { # 561 
+            # {   "C_MAT" : None, 
+            #     "PREZZO" : None,
+            #     "D-MAT" : None,                                      
+            #     "CAUSALE" : None,                                     
+            #     "CAUSALE-NO-PRZ" : None                     
+            # }
+        }
 
     def INIZIA_TAB_SING(self): # 1421
 # 039600  05 C-MAT-SING        PIC S9(15) COMP-3.
@@ -489,8 +476,13 @@ class Program():
         }
 
     def TRATTA_OLD_NEW(self):
+        logging.debug("TRATTA_OLD_NEW")
         print(self.D_CONTO_MEM)
         print("dal mag ",self.MAG_INPUT)
+        
+        self.IND_CAPI_LETTI = 0
+        self.IND_CAPI_NO_GIAC = 0
+        
         self.TRATTA_SITPF_3()
         print(" S stampa rapportino")
         self.COD_IN = input().lower()
@@ -499,13 +491,12 @@ class Program():
             print("   rapportino stampato")       
 
     def TRATTA_SITPF_3(self): # 1713
+        logging.debug("TRATTA_SITPF_3 limit 1")
+        data = self.session.execute("select * from SITPF where MAG  = {} and C_MAT = 101101210006065 limit 1".format(self.MAG_INPUT))
         
-        data = self.conn.execute("select * from SITPF where MAG  = {} limit 1;".format(self.MAG_INPUT))
-        self.IND_CAPI_LETTI = 0
+        logging.debug("SOLO 1 record da SITPF!")
         for rec_SITPF3 in data:
             # SELEZIONA-SITPF-3 1721 - 1781
-            print(rec_SITPF3)
-
             # 15 C-MAT               PIC S9(15) COMP-3.                   YSITPF  
             # 15 MAGAZZINO           PIC S9(4)  COMP.                     YSITPF  
             # 15 QTA-GIAC.                                                YSITPF  
@@ -587,6 +578,7 @@ class Program():
                 print(key,self.DEP_TAB_UNICO_DDT)
             except: # on trovato
                 continue
+            logging.debug("Check del massimo")
             if (self.DEP_TAB_UNICO_DDT["MAX-CAPI"] == self.DEP_TAB_UNICO_DDT["CAPI-LETTI"]):
 
                 # check se raggiunto il massimo su TUTTI TAB_UNICO_DDT
@@ -601,19 +593,21 @@ class Program():
                 else:
                     continue # raggiunto SOLO MAX per specifico AS CL :continuo for su SITPF3
                 
-
+            logging.debug("Non raggiunto il massimo")
             if not (self.SOCIETA_INPUT_R == None)\
                  and not (self.SOCIETA_INPUT_R == int(self.C_MAT["SOCIETA-MOD"]) ): # SOCIETA-MOD 
                     print("{} {} non uguale societa'".format(self.SOCIETA_INPUT ,self.C_MAT["SOCIETA-MOD"]))
                     continue
 
             # 1853
+            logging.debug(rec_SITPF3)
+
             for IT in range(1,self.NTGOCCURS+1):
                 if self.DISIMPEGNA == "SI":
                     self.DA_TRASFERIRE = rec_SITPF3["GQF%d" % IT]
                 else:
                     self.DA_TRASFERIRE = rec_SITPF3["GQF%d" % IT] + rec_SITPF3["QIF%d" % IT]
-
+                logging.debug("Da trasferire taglia {} : {}".format(IT,self.DA_TRASFERIRE))
                 for IC in range(1,self.DA_TRASFERIRE+1):
                     self.C_MAT_TRANS_RID = int(rec_SITPF3["C_MAT"])
                     
@@ -637,88 +631,99 @@ class Program():
 
                     self.NTG_MEM = IT
                     self.C_MAT_A_BARRE = lib_dt.conv_trans_barc(rec_SITPF3["C_MAT"], self.NTG_MEM)
+                    logging.debug("call TRATTA-LEGGI")
+                    self.TRATTA_LEGGI(rec_SITPF3,IT)
 
-                    self.TRATTA_LEGGI(rec_SITPF3)
+
 
     def TRATTA_LETTI(self):	# 2413
-        while (True):
-            self.TOT_CAPI_LETTI_1 = self.IND_CAPI_LETTI
-            print("- Tot CAPI - ",self.TOT_CAPI_LETTI_1)
-            self.TOT_CAPI_NO_GIAC = self.IND_CAPI_NO_GIAC
-            print("- No GIAC./PREZZO - ",self.TOT_CAPI_NO_GIAC)
-            print(" ")
-            print("Vuoi STORNARE ","(SI-NO)")
-            self.CONFERMA_STORNO = input()
+        self.TOT_CAPI_LETTI_1 = self.IND_CAPI_LETTI
+        print("- Tot CAPI - ",self.TOT_CAPI_LETTI_1)
+        self.TOT_CAPI_NO_GIAC = self.IND_CAPI_NO_GIAC
+        print("- No GIAC./PREZZO - ",self.TOT_CAPI_NO_GIAC)
+        print(" ")
+        print("Vuoi STORNARE ","(SI-NO)")
+        self.CONFERMA_STORNO = input()
 
-            if (self.CONFERMA_STORNO.lower() == "si")\
-                and not self.TOT_CAPI_LETTI_1 == 0:
-                
-                while(True):
-                    print("Dammi il CODICE") # CPY DANCODMT
-                    print(" . fine lettura")
-                    print(" @ storno totale")
-                    self.COD_IN = input()
-                    if self.COD_IN == ".":  break
-                    if not (self.COD_IN == "@"):
-                        try:
-                            int(self.COD_IN)
-                        except:
-                            print("COD non num >> RILEGGERE")
-                            continue
-                        self.TRATTA_STORNO()
+        if (self.CONFERMA_STORNO.lower() == "si")\
+            and not self.TOT_CAPI_LETTI_1 == 0:
+            
+            
+            print("Dammi il CODICE") # CPY DANCODMT
+            print(" . fine lettura")
+            print(" @ storno totale")
+            self.COD_IN = input()
+            if self.COD_IN == ".":  return
+            if not (self.COD_IN == "@"):
+                try:
+                    int(self.COD_IN)
+                except:
+                    print("COD non num >> RILEGGERE")
 
-                    if not self.TABELLA_SINGOLI:
-                        break
-                    
-                    self.LEGGI_PARAMDT()
-                    self.INDIRIZZO_DPARAM = "..." # 1454
+                self.TRATTA_STORNO()
+            
+        # 2454 IF IND-CAPI-LETTI NOT < 1  
+        if self.IND_CAPI_LETTI < 1: 
+        # if not self.TABELLA_SINGOLI:
+            return
+        
+        self.LEGGI_PARAMDT()
+        self.INDIRIZZO_DPARAM = "..." # 1454
 
-                    self.AGG_DPARAM()
-                    
-                    print("Aggiorno  ")
-                    print("BOLLA n.  %s" % self.NUMERO_DDT)   
+        self.AGG_DPARAM()
+        
+        print("Aggiorno  ")
+        print("BOLLA n.  %s" % self.NUMERO_DDT)   
 
-                    if (len(self.PARTAB_SING) > 0):
-                        for self.IND_BARUNI in range(len(self.PARTAB_SING)):
-                             self.INSERISCI_MOVSKU()   
+        # 2476
+        if (len(self.TABELLA_SINGOLI) > 0):
+            # 2480
+            for self.IND_BARUNI in range(len(self.PARTAB_SING)):
+                    self.INSERISCI_MOVSKU()   
 
-                    FILE_VAR_VALUE_TEMPLATE = "%(USER_VAR_VALUE)s_BC_%(AA_MM_GG_DDT)s%(NUMERO_DDT)s_%(MAG_INPUT_R)s%(NEG_IN)s_B"  
-                    FILE_VAR_VALUE = FILE_VAR_VALUE_TEMPLATE % {
-                        "USER_VAR_VALUE" : "",
-                        "AA_MM_GG_DDT" : "",
-                        "NUMERO_DDT" : self.NUMERO_DDT,
-                        "MAG_INPUT_R" : self.MAG_INPUT,
-                        "NEG_IN" : self.NEG_IN
-                    }
-                    print(FILE_VAR_VALUE)
-                    FILE_BC = open(FILE_VAR_VALUE,"w")
-                    for rec in self.TABELLA_ARTICOLI_LETTI:
-                        self.SCRIVI_RECORD()
-    
-                    # 2531 
-                    if self.REC_INDIRIZZI["PRIORITA"] == "4":
-                        self.INTESTA_FILE_BC() # 2533
-                        for SING in self.TABELLA_SINGOLI:
-                            self.SCORRI_TAB_SING(SING)
-                    else:
-                        self.SCORRI_TB() # 2542
+        if self.REC_INDIRIZZI["PRIORITA"] == 4:        
+            FILE_VAR_VALUE_TEMPLATE = "%(USER_VAR_VALUE)s_BC_%(AA_MM_GG_DDT)s%(NUMERO_DDT)s_%(MAG_INPUT_R)s%(NEG_IN)s_B"  
+            FILE_VAR_VALUE = FILE_VAR_VALUE_TEMPLATE % {
+                "USER_VAR_VALUE" : "",
+                "AA_MM_GG_DDT" : "",
+                "NUMERO_DDT" : self.NUMERO_DDT,
+                "MAG_INPUT_R" : self.MAG_INPUT,
+                "NEG_IN" : self.NEG_IN
+            }
+            print(FILE_VAR_VALUE)
+            FILE_BC = open(FILE_VAR_VALUE,"w")
+        
+        # 2522
+        for rec in self.TABELLA_ARTICOLI_LETTI:
+            self.SCRIVI_RECORD()
 
-                    self.SCRIVI_BOLLE() # 2545
-                    self.CHIAMA_PRINTDDT() # 2546
+        # 2531 
+        if self.REC_INDIRIZZI["PRIORITA"] == "4":
+            self.INTESTA_FILE_BC() # 2533
+            for SING in self.TABELLA_SINGOLI:
+                self.SCORRI_TAB_SING(SING)
+        else:
+            self.SCORRI_TB() # 2542
 
-                    if self.REC_INDIRIZZI["PRIORITA"] == "4":
-                        self.PRTBCEU8() # 2561
+        self.SCRIVI_BOLLE() # 2545
+        self.CHIAMA_PRINTDDT() # 2546
 
-                    if self.IND_CAPI_NO_GIAC: # > 0
-                        self.STAMPA_NO_GIAC()
+        if self.REC_INDIRIZZI["PRIORITA"] == "4":
+            # 2553 
+            # MOVE DIVISA OF REC-CONFATT TO                                  
+            #         DIVISA-PRIMO-LETTO
+            self.PRTBCEU8() # 2561
 
-                    if not self.FLAG_ANACON in ['0',' ']:
-                         self.ALLINEA_BOLLE_ESTERO()
+        if self.IND_CAPI_NO_GIAC: # > 0
+            self.STAMPA_NO_GIAC()
 
-                    self.AVANZA_DDT()
-                print("premi un tasto per continuare...")
-                input()
+        if not self.FLAG_ANACON in ['0',' ']:
+                self.ALLINEA_BOLLE_ESTERO()
 
+        self.AVANZA_DDT()
+
+        print("premi un tasto per continuare...")
+        input()
 
     def ALLINEA_BOLLE_ESTERO(self): # 2587
         pass 
@@ -759,17 +764,16 @@ class Program():
     def STAMPA_NO_GIAC(self): # 2660
         pass # call cobol QWLPPR 2686
 
-
-
     def SCRIVI_RECORD(self):
-        # CPY DANCODMT  C-MAT-TRANSITO
-        # 3377-3384
-        # INVERTI-QTA 3413
-        self.TABELLA_ARTICOLI_LETTI[QTA_TAGLIA] = [ -tg for tg in self.TABELLA_ARTICOLI_LETTI[QTA_TAGLIA]]
-        # PREPARA-MOVMAG 3744 , CPY YMOVMAG
-        # PERFORM PREPARA-MOVMAG # 404
-        self.CREA_MOVMAG_P_3() # 3405
-        self.AGGIORNA_SITPF_P_3() # 3407
+        for rec in self.TABELLA_ARTICOLI_LETTI:
+            # CPY DANCODMT  C-MAT-TRANSITO
+            # 3377-3384
+            # INVERTI-QTA 3413
+            rec["QTA-TAGLIE"] = [ -tg for tg in rec["QTA-TAGLIE"]]
+            # PREPARA-MOVMAG 3744 , CPY YMOVMAG
+            # PERFORM PREPARA-MOVMAG # 404
+            self.CREA_MOVMAG_P_3() # 3405
+            self.AGGIORNA_SITPF_P_3() # 3407
     
     def CREA_MOVMAG_P_3(self): # 3776
         pass
@@ -777,11 +781,10 @@ class Program():
     def AGGIORNA_SITPF_P_3(self): # 3812
         pass
 
-
- 
     def LEGGI_PARAMDT(self):
-        rec_= self.session.execute(db.sql_SELECT_DPARAM,{})
-        for rec in rec_:    # solo 1 rec e in formato dict
+        data = self.session.execute(db.sql_SELECT_DPARAM,{})
+        
+        for rec_ in data:    # solo 1 rec e in formato dict
             rec = rec_._mapping 
             break        
         self.NUMERO_DDT = rec["NUMERO_3"]
@@ -828,41 +831,67 @@ class Program():
         data = self.conn.execute(db.sql_INSERT_MOV_SKU,params)
 
     def TRATTA_STORNO(self):
-        TAGLIA = self.COD_IN[14]
-        TAGLIA = common_fun.idxtg(TAGLIA)
-        
-        # SOC_COM =  self.COD_IN[8:10]
-        # SOC_COM[0] = "0"
-        # self.COD_IN[8:10] = SOC_COM
-        self.COD_IN[8] = "0"
-        ELEM_ART = self.COD_IN[:len(self.COD_IN)-1] # toglie la taglia in cbl:  / 10
-        if not (ELEM_ART in self.TABELLA_ARTICOLI_LETTI):
-            print("Manca lettura ")
-            return
-        self.TABELLA_ARTICOLI_LETTI[ELEM_ART]["QTA_TAGLIA"][TAGLIA] -= 1
-        if (self.TABELLA_ARTICOLI_LETTI[ELEM_ART]["QTA_TAGLIA"][TAGLIA] < 0):
-            print("Taglia non stornabile" )
-            return
-        # 2924 PERFORM DELETE-ELEM-SING THRU EX-DELETE-ELEM-SING.
-        del self.TABELLA_SINGOLI[self.COD_IN]
+        while(True): # 2889
+            print("Dammi il CODICE") # CPY DANCODMT
+            print(" . fine lettura")
+            print(" @ storno totale")
+            self.COD_IN = input()
+            # 05 COD-IN   COPY DANCODBC. 
+            if self.COD_IN == ".":  break
+            if (self.COD_IN == "@"):
+                self.IND_CAPI_LETTI = 0
+                self.COD_IN = "."
+                break
+            try:
+                int(self.COD_IN)
+            except:
+                print("COD non num >> RILEGGERE")
 
-        print("ancora %s in %s"  % (self.TABELLA_ARTICOLI_LETTI[ELEM_ART]["QTA_TAGLIA"][TAGLIA], self.COD_IN[8]))
+            self.C_MAT_A_BARRE = self.COD_IN # redefines
+            NTG_IN = self.C_MAT_A_BARRE[14]
+
+            NTG_OUT = common_fun.idxtg(NTG_IN)
+            
+            # SOC_COM =  self.COD_IN[8:10]
+            # SOC_COM[0] = "0"
+            # self.COD_IN[8:10] = SOC_COM
+            self.C_MAT_A_BARRE[8] = "0"
+            # 2908
+            ELEM_ART = self.C_MAT_A_BARRE[:len(self.COD_IN)-1] # toglie la taglia in cbl:  / 10
+            if not (ELEM_ART in self.TABELLA_ARTICOLI_LETTI):
+                print("Manca lettura ")
+                return
+            self.TABELLA_ARTICOLI_LETTI[ELEM_ART]["QTA-TAGLIE"][NTG_OUT] -= 1
+            if (self.TABELLA_ARTICOLI_LETTI[ELEM_ART]["QTA_TAGLIA"][NTG_OUT] < 0):
+                print("Taglia non stornabile" )
+                return
+            # 2924 PERFORM DELETE-ELEM-SING THRU EX-DELETE-ELEM-SING.
+            del self.TABELLA_SINGOLI[ELEM_ART]
+            self.IND_CAPI_LETTI -= 1
+            print("ancora %s in %s"  % (self.TABELLA_ARTICOLI_LETTI[ELEM_ART]["QTA-TAGLIE"][NTG_OUT], self.C_MAT_A_BARRE))
+
+            self.PREZZO_TOT_D = self.PREZZO_TOT / 100
+            # 2942
+            # rimette ELEM_ART (ARTELEM-LETTI) in TABELLA_ARTICOLI_LETTI
 
     def TRATTA_LEGGI(self,rec_SITPF3,NTG_MEM):
+        logging.debug("TRATTA_LEGGI")
+
         # 1945
         self.C_MAT_A_BARRE = lib_dt.conv_trans_barc(rec_SITPF3["C_MAT"], NTG_MEM)
-        KEY_ELEM_ART = self.C_MAT_A_BARRE[:len(self.C_MAT_A_BARRE)-1]
+        # KEY_ELEM_ART = self.C_MAT_A_BARRE[:len(self.C_MAT_A_BARRE)-1]
+        KEY_ELEM_ART = self.C_MAT_A_BARRE
         
         # Check esistenza in self.TABELLA_ARTICOLI_LETTI
         QT_STATO_TROVATO = KEY_ELEM_ART in self.TABELLA_ARTICOLI_LETTI
         
         if not QT_STATO_TROVATO: # Non presente in self.TABELLA_ARTICOLI_LETTI
-            data = self.session.execute(db.sql_SELECT_ANAMAT,{'C_MAT':self.C_MAT_A_BARRE})
+            data = self.session.execute(db.sql_SELECT_ANAMAT,{'C_MAT':rec_SITPF3["C_MAT"]})
             if not data: # IF B2C-NO-DT
                 print("Inesist. %s" % self.C_MAT_A_BARRE) 
                 return
             for rec_ in data:    # solo 1 rec e in formato dict
-                rec_ANAMAT = rec_._mapping 
+                rec_ANAMAT = rec_ # rec_._mapping 
                 break    
 
         if not QT_STATO_TROVATO:  # Non presente in self.TABELLA_ARTICOLI_LETTI
@@ -881,7 +910,7 @@ class Program():
 
         RISP_NO_GIAC =  RISP_NO_PREZZO = ""
         self.PREZZO_MEM = 0
-        if not QT_STATO_TROVATO and self.REC_INDIRIZZI["QT_STATO"] == 4:
+        if not QT_STATO_TROVATO and self.REC_INDIRIZZI["PRIORITA"] == 4:
             rc = self.CERCA_PREZZO_V()
             if not rc: 
                return 
@@ -921,7 +950,7 @@ class Program():
                 "CAMBIO" : self.CAMBIO_MEM, # S9(9),
                 "TIPO-ANA" : self.VAL_REC_MEM,
                 "QTA-GIAC" : QTA_GIAC, # S9(8)
-                "QTA-TAGLIE" : [None]*self.NTGOCCURS, # S9(4)
+                "QTA-TAGLIE" : [0]*self.NTGOCCURS, # S9(4)
                 "COSTO" : self.COSTO_MEM #S9(9)
             } 
         else:
@@ -931,7 +960,7 @@ class Program():
 
         PREZZO_D = self.PREZZO_MEM / 100
         ELEM_ART["QTA-TAGLIE"][self.NTG_MEM] += 1 
-        if rec_SITPF3["GQF%d" % IT]  <  ELEM_ART["QTA_TAGLIE"][NTG_MEM] :
+        if rec_SITPF3["GQF%d" % IT]  <  ELEM_ART["QTA-TAGLIE"][NTG_MEM] :
             print("Manca giac %s" %  self.C_MAT_A_BARRE)
 
             RISP_NO_GIAC = self.TRATTA_NO_GIAC(ELEM_ART["D-MAT"],PREZZO_D) # 2142
@@ -959,10 +988,11 @@ class Program():
             "SKU" : None
         }
         self.TABELLA_SINGOLI.append(ELEMENTO_SINGOLI)
-    
+        logging.debug("Append TABELLA SINGOLI")
+
         if not QT_STATO_TROVATO:
             self.TABELLA_ARTICOLI_LETTI[KEY_ELEM_ART] = ELEM_ART
-
+        logging.debug("Fine TRATTA_LEGGI")
 
     def TRATTA_NO_GIAC(self,D_MAT,PREZZO_D): # 2273
         print("%s %s" % (D_MAT,PREZZO_D))
@@ -973,32 +1003,34 @@ class Program():
 
 
     def INSERISCI_NO_GIAC_PREZZO(self,RISP_NO_GIAC): # 2243
-        IND_CAPI_NO_GIAC = {}
+        self.IND_CAPI_NO_GIAC += 1
+        CAPI_NO_GIAC = {}
+        CAPI_NO_GIAC = {}
         if RISP_NO_GIAC == "S":
             print("INSERITO Manca GIAC.")
-            IND_CAPI_NO_GIAC["CAUSALE"] = "MancaGIAC"
+            CAPI_NO_GIAC["CAUSALE"] = "MancaGIAC"
         if self.RISP_NO_PREZZO == "S" and  self.FLAG_DT_ESTERO == 1:
             print("INS. Manca PREZZO x ESTERO")
-            IND_CAPI_NO_GIAC["CAUSALE-NO-PRZ"] = "MancaPRZ"
+            CAPI_NO_GIAC["CAUSALE-NO-PRZ"] = "MancaPRZ"
         
-        IND_CAPI_NO_GIAC["C-MAT"] = self.C_MAT_A_BARRE
-        IND_CAPI_NO_GIAC["D-MAT"] = self.D_MAT_MEM
-        IND_CAPI_NO_GIAC["PREZZO"] = self.PREZZO_MEM
+        CAPI_NO_GIAC["C-MAT"] = self.C_MAT_A_BARRE
+        CAPI_NO_GIAC["D-MAT"] = self.D_MAT_MEM
+        CAPI_NO_GIAC["PREZZO"] = self.PREZZO_MEM
 
-        self.TABELLA_NO_GIAC.append(IND_CAPI_NO_GIAC)
+        self.TABELLA_NO_GIAC[self.C_MAT_A_BARRE] = CAPI_NO_GIAC
         
     def CERCA_PREZZO(self):
         # 3420
         C_MAT = '%15d' % self.C_MAT_TRANS_RID
         C_MAT = C_MAT[0:len(C_MAT)-3] + '000'
-        data = self.session.execute(db.sql_SELECT_PREZZO,{'C_MAT':C_MAT})
+        data = self.session.execute(db.sql_SELECT_ANAMAT,{'C_MAT':C_MAT})
         if not data: 
             print("Inesist. col 0  %s" % C_MAT) 
             return False
         for rec_ in data:    # solo 1 rec e in formato dict
             rec = rec_._mapping 
+            self.PREZZO_ANAMAT = rec["CST_STD"]
             break    
-        self.PREZZO_ANAMAT = rec["COSTO"]
 
         if self.MAG_INPUT in [1, 4, 6, 7, 852, 853]:
             self.CHIAMA_DTVALSTK()
@@ -1038,9 +1070,10 @@ class Program():
     def CERCA_PREZZIA(self):
         # 3502
         C_MAT = '%15d' % self.C_MAT_TRANS_RID
+        # C_MAT = self.C_MAT_TRANS_RID / 1000 * 1000
         C_MAT = C_MAT[0:len(C_MAT)-3] + '000'
         data = self.session.execute(db.sql_SELECT_PREZZIA,{'C_MAT':C_MAT})
-        if not data: 
+        if not data.rowcount : 
             print("Inesist. col 0  %s" % C_MAT) 
             return False
         for rec_ in data:    # solo 1 rec e in formato dict

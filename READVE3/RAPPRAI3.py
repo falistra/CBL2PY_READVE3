@@ -1,16 +1,21 @@
 import sys
 from QTABEL import QTABEL
 from collections import OrderedDict
+import logging
+
 
 class RAPPRAI3:
     def __init__(self,TABELLA_ARTICOLI_LETTI,TABELLA_NO_GIAC):
 
+        logging.debug("INIT RAPPRAI3")
+        self.TABELLA_ARTICOLI_LETTI = TABELLA_ARTICOLI_LETTI
+        self.TABELLA_NO_GIAC = TABELLA_NO_GIAC
+
         self.TABELLA_CLASSI_LETTE = OrderedDict()
         self.CARICA_TABELLA_CLASSI()
-        for ART in TABELLA_ARTICOLI_LETTI:
+        for ART in self.TABELLA_ARTICOLI_LETTI:
             self.CARICA_QTA_CLASSE(ART)
-
-        for CMAT in TABELLA_NO_GIAC:
+        for CMAT in self.TABELLA_NO_GIAC:
             self.CARICA_QTA_NO_GIAC(CMAT)
 
     
@@ -42,5 +47,5 @@ class RAPPRAI3:
         self.TABELLA_CLASSI_LETTE[CLASSE]["PREZZO-TOT"] += sum([qta * ART["PREZZO"] for qta in ART["QTA-TAGLIA"]])
 
     def CARICA_QTA_NO_GIAC(self,ELEM_NO_GIAC):
-        CLASSE = ELEM_NO_GIAC["C-MAT-NO-GIAC"][1:3] # DANCODBC
-        self.TABELLA_CLASSI_LETTE[CLASSE]["PREZZO-NO-GIAC"] += ELEM_NO_GIAC["C-MAT-NO-GIAC"]
+        CLASSE = ELEM_NO_GIAC["C-MAT"][1:3] # DANCODBC
+        self.TABELLA_CLASSI_LETTE[CLASSE]["PREZZO-NO-GIAC"] += ELEM_NO_GIAC["C-MAT"]
