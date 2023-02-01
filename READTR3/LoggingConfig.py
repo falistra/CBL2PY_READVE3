@@ -3,7 +3,7 @@ from logging import config
 log_config = {
     "version":1,
     "root":{
-        "handlers" : ["console","file"],
+        "handlers" : ["file"], # ["console","file"],
         "level": "DEBUG"
     },
     "handlers":{
@@ -15,7 +15,7 @@ log_config = {
         "file":{
             "formatter": "short std_out",
             "class": "logging.StreamHandler",
-            'stream': open('./READTR4.log','w'),
+            'stream': open('./READTR3.log','w'),
             "level": "DEBUG"
         }
     },
